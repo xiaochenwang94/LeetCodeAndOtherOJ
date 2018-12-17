@@ -219,4 +219,46 @@ leetcode 15 3Sum
                 idx+=1
             idx+=1
         return ret
+
+leetcode 16 3Sum Closest
+
+问题描述: 和上一道题相似，现在要求加和和给定的target最接近。
+
+思路：和上一题一样，固定一个数字，找另外两个数字。使用两个index从左到右，从右到左，比三层循环次数要少，可以加速。其他剪枝方法不太好用。
+
+    class Solution(object):
+    def threeSumClosest(self, nums, target):
+        """
+        :type nums: List[int]
+        :type target: int
+        :rtype: int
+        """
+        nums = sorted(nums)
+        idx = 0
+        size = len(nums)
+        close = 0
+        diff = 1e10
+        while idx < size:
+            i = idx+1
+            j = size-1
+            while i < j:
+                s = nums[idx] + nums[i] + nums[j]
+                if  s < target:
+                    i+=1
+                    if diff > target - s:
+                        close = s
+                        diff = target - s
+                elif s > target:
+                    j-=1
+                    if diff > s - target:
+                        close = s
+                        diff = s - target
+                else:
+                    return target
+            while idx < size-1 and nums[idx] == nums[idx+1]:
+                idx+=1
+            idx+=1
+        return close
+
+
             
