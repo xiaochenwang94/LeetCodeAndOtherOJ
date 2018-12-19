@@ -261,4 +261,246 @@ leetcode 16 3Sum Closest
         return close
 
 
+leetcode 18 4Sum
+
+问题描述：四个数字加和
+
+思路：和前一道题目一样，套一层for循环就行了。
+
+    class Solution(object):
+    def fourSum(self, nums, target):
+        """
+        :type nums: List[int]
+        :type target: int
+        :rtype: List[List[int]]
+        """
+        nums = sorted(nums)
+        size = len(nums)
+        ret = []
+        for fidx in range(len(nums)-3):
+            if fidx!=0:
+                if nums[fidx] == nums[fidx-1]:
+                    continue
+            t = target - nums[fidx]
+            idx = fidx+1
+            while idx < size-2:
+                tt = t - nums[idx]
+                i = idx + 1
+                j = size - 1
+                while i < j:
+                    s = nums[i] + nums[j]
+                    if s < tt:
+                        i+=1
+                    elif s > tt:
+                        j-=1
+                    else:
+                        ret.append([nums[fidx], nums[idx], nums[i], nums[j]])
+                        while i < j and nums[i] == nums[i+1]:
+                            i+=1
+                        while i < j and nums[j] == nums[j-1]:
+                            j-=1
+                        i+=1
+                        j-=1
+                while idx < size-1 and nums[idx] == nums[idx+1]:
+                    idx+=1
+                idx+=1
+        return ret
+                    
+                    
+leetcode 19 Remove Nth Node From End of List
+
+问题描述：删除倒数第n个数字
+
+思路：两个指针，第一个先跑n个，第二个再跑。然后删除。
+
+    # Definition for singly-linked list.
+    # class ListNode(object):
+    #     def __init__(self, x):
+    #         self.val = x
+    #         self.next = None
+
+    class Solution(object):
+        def removeNthFromEnd(self, head, n):
+            """
+            :type head: ListNode
+            :type n: int
+            :rtype: ListNode
+            """
+            p = head
+            q = head
+            for i in range(n):
+                p = p.next
+            if p is None:
+                return head.next
+            while p.next is not None:
+                p = p.next
+                q = q.next
+            q.next = q.next.next
+            return head
+
+leetcode 21 Merge Two Sorted Lists
+
+问题描述：合并两个有序的链表
+
+思路：参考了大神的代码，递归写法。每次比较l1, l2如果l1.val > l2.val 那么交换两段列表，然后l1向后走一个。
+
+    # Definition for singly-linked list.
+    # class ListNode(object):
+    #     def __init__(self, x):
+    #         self.val = x
+    #         self.next = None
+
+    class Solution(object):
+        def mergeTwoLists(self, l1, l2):
+            """
+            :type l1: ListNode
+            :type l2: ListNode
+            :rtype: ListNode
+            """
+            if not l1 or (l2 and l1.val > l2.val):
+                t = l1
+                l1 = l2
+                l2 = t
+            if l1:
+                l1.next = self.mergeTwoLists(l1.next, l2)
+            return l1
+
+
+leetcode 22 Generate Parentheses
+
+问题描述：给定n对括号，求出所有可能。
+
+思路：
+
+解法一：BFS进行搜索，每次分两种可能，添加左括号或者右括号。
+
+    class Node(object):
+    def __init__(self, n):
+        self.left = n
+        self.right = n
+        self.stack = 0
+        self.val = ""
+
+    class Solution(object):
+        def generateParenthesis(self, n):
+            """
+            :type n: int
+            :rtype: List[str]
+            """
+            import Queue
+            q = Queue.Queue()
+            ret = []
+            q.put(Node(n))
+            while not q.empty():
+                node = q.get()
+                if node.left == 0 and node.right == 0:
+                    ret.append(node.val)
+                    continue
+                if node.left != 0:
+                    n = Node(n)
+                    n.left = node.left - 1
+                    n.right = node.right
+                    n.stack = node.stack+1
+                    n.val = node.val+'('
+                    q.put(n)
+                if node.right != 0 and node.stack > 0:
+                    n = Node(n)
+                    n.left = node.left
+                    n.right = node.right - 1
+                    n.stack = node.stack - 1
+                    n.val = node.val+')'
+                    q.put(n)
+            return ret
+
+解法2: dfs
+
+    class Solution(object):
+    def generateParenthesis(self, n):
+        """
+        :type n: int
+        :rtype: List[str]
+        """
+        ret = []
+        self.dfs(n, n, "", ret)
+        return ret
+    
+    def dfs(self, left, right, val, ret):
+        if left == 0 and right == 0:
+            ret.append(val)
+        if right < left:
+            return None
+        if left != 0:
+            self.dfs(left-1, right, val+"(", ret)
+        if right != 0 and right-1>=left:
+            self.dfs(left, right-1, val+")", ret)
+
+leetcode 29 Divide Two Integers
+
+问题描述：给定两个正数，求整除之后的结果。不能用乘法，除法，mod。
+
+思路：使用递归模拟，当除数大于被除数直接返回，否则加上初始被除数的倍数。**这道题应该注意题目描述的边界条件，以及两个数符号相反的情况！**
+
+    class Solution(object):
+    def divide(self, dividend, divisor):
+        """
+        :type dividend: int
+        :type divisor: int
+        :rtype: int
+        """
+        if (dividend >= 0 and divisor > 0) or (dividend < 0 and divisor < 0):
+            flag = 1
+        else:
+            flag = -1
+        dividend = abs(dividend)
+        divisor = abs(divisor)
+        l = [1]
+        r = self.dfs(dividend, divisor, l)
+        r = r[0]*flag
+        if r > 2147483647:
+            return 2147483647
+        if r < -2147483648:
+            return -2147483648
+        return r
+    
+    def dfs(self, dividend, divisor, l):
+        if dividend >= divisor:
+            l.append(l[-1]+l[-1])
+            num, d = self.dfs(dividend, divisor+divisor, l)
+            l.pop()
+            if d >= divisor: 
+                d -= divisor
+                num += l[-1]
+            return num, d
+        return 0, dividend
+
+leetcode 100 Same Tree
+
+问题描述：给定两棵树，判断是不是相等的两棵树。
+
+思路：开始想按序遍历，后来发现需要在遍历的时候考虑null的问题。要不然不同的两棵树遍历的结果可能相同。例如：[1,1],[1,null,1]。可以同时遍历两棵树，只要结果不同就可以返回False了。
+
+    # Definition for a binary tree node.
+    # class TreeNode(object):
+    #     def __init__(self, x):
+    #         self.val = x
+    #         self.left = None
+    #         self.right = None
+
+    class Solution(object):
+        def isSameTree(self, p, q):
+            """
+            :type p: TreeNode
+            :type q: TreeNode
+            :rtype: bool
+            """
+            return self.dfs(p, q)
+        
+        def dfs(self, root1, root2):
+            if root1 is None and root2 is None:
+                return True
+            if root1 is None or root2 is None:
+                return False
+            if root1.val != root2.val:
+                return False
+            return self.dfs(root1.left, root2.left) and self.dfs(root1.right, root2.right)
             
