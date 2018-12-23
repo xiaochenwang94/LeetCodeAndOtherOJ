@@ -507,47 +507,50 @@ leetcode 100 Same Tree
 ## Leetcode Contest
 contest 116 大神代码
 
+**961. N-Repeated Element in Size 2N Array**
+
 In a array A of size 2N, there are N+1 unique elements, and exactly one of these elements is repeated N times.
 
 Return the element repeated N times.
 
 Input: [1,2,3,3]
 Output: 3
+```cpp
+#include<map>
+#include<stdio.h>
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#include<string>
+#include<string.h>
+using namespace std;
 
-    #include<map>
-    #include<stdio.h>
-    #include<iostream>
-    #include<vector>
-    #include<algorithm>
-    #include<string>
-    #include<string.h>
-    using namespace std;
+typedef long long LL;
+typedef vector<int> VI;
 
-    typedef long long LL;
-    typedef vector<int> VI;
+#define REP(i,n) for(int i=0, i##_len=(n); i<i##_len; ++i)
+#define EACH(i,c) for(__typeof((c).begin()) i=(c).begin(),i##_end=(c).end();i!=i##_end;++i)
+#define eprintf(...) fprintf(stderr, __VA_ARGS__)
 
-    #define REP(i,n) for(int i=0, i##_len=(n); i<i##_len; ++i)
-    #define EACH(i,c) for(__typeof((c).begin()) i=(c).begin(),i##_end=(c).end();i!=i##_end;++i)
-    #define eprintf(...) fprintf(stderr, __VA_ARGS__)
-
-    template<class T> inline void amin(T &x, const T &y) { if (y<x) x=y; }
-    template<class T> inline void amax(T &x, const T &y) { if (x<y) x=y; }
-    template<class Iter> void rprintf(const char *fmt, Iter begin, Iter end) {
-        for (bool sp=0; begin!=end; ++begin) { if (sp) putchar(' '); else sp = true; printf(fmt, *begin); }
-        putchar('\n');
+template<class T> inline void amin(T &x, const T &y) { if (y<x) x=y; }
+template<class T> inline void amax(T &x, const T &y) { if (x<y) x=y; }
+template<class Iter> void rprintf(const char *fmt, Iter begin, Iter end) {
+    for (bool sp=0; begin!=end; ++begin) { if (sp) putchar(' '); else sp = true; printf(fmt, *begin); }
+    putchar('\n');
+}
+class Solution {
+public:
+    int repeatedNTimes(vector<int>& A) {
+    map<int, int> mp;
+    EACH (e, A) mp[*e]++;
+    EACH (e, mp) if (e->second > 1) return e->first;
+    return 0;
     }
-    class Solution {
-    public:
-        int repeatedNTimes(vector<int>& A) {
-        map<int, int> mp;
-        EACH (e, A) mp[*e]++;
-        EACH (e, mp) if (e->second > 1) return e->first;
-        return 0;
-        }
-    };
+};
+```
 
 
-**Maximum Width Ramp**
+**962. Maximum Width Ramp**
 
 问题描述：Given an array A of integers, a ramp is a tuple (i, j) for which i < j and A[i] <= A[j].  The width of such a ramp is j - i.
 
@@ -560,7 +563,7 @@ The maximum width ramp is achieved at (i, j) = (1, 5): A[1] = 0 and A[5] = 5.
 
 思路：先组成A[i], i的pair，然后按A[i]排序。得到的序列，第i个数的左边都是比A[i]小的，只要找到0-i之间最左边的index，然后用A[i,1]做减法，那么就求得了现在最大的gap。
 
-```
+```cpp
 #include<stdio.h>
 #include<iostream>
 #include<vector>
@@ -600,7 +603,7 @@ public:
 };
 ```
 
-**Minimum Area Rectangle II**
+**963. Minimum Area Rectangle II**
 
 Given a set of points in the xy-plane, determine the minimum area of any rectangle formed from these points, with sides not necessarily parallel to the x and y axes.
 
@@ -612,7 +615,7 @@ Explanation: The minimum area rectangle occurs at [1,2],[2,1],[1,0],[0,1], with 
 
 ![](https://assets.leetcode.com/uploads/2018/12/21/1a.png)
 
-```
+```cpp
 #include<stdio.h>
 #include<iostream>
 #include<vector>
@@ -679,18 +682,84 @@ It's not allowed to use the unary negation operator (-).  For example, "x - x" i
 We would like to write an expression with the least number of operators such that the expression equals the given target.  Return the least number of expressions used.
 
 Input: x = 3, target = 19
+
 Output: 5
+
 Explanation: 3 * 3 + 3 * 3 + 3 / 3.  The expression contains 5 operations.
 
 Input: x = 5, target = 501
+
 Output: 8
+
 Explanation: 5 * 5 * 5 * 5 - 5 * 5 * 5 + 5 / 5.  The expression contains 8 operations.
 
 Input: x = 100, target = 100000000
+
 Output: 3
+
 Explanation: 100 * 100 * 100 * 100.  The expression contains 3 operations.
 
 Note:
 
 * 2 <= x <= 100
 * 1 <= target <= 2 * 10^8
+
+```cpp
+#include<unordered_map>
+#include<stdio.h>
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#include<string>
+#include<string.h>
+using namespace std;
+
+typedef long long LL;
+typedef vector<int> VI;
+
+#define REP(i,n) for(int i=0, i##_len=(n); i<i##_len; ++i)
+#define EACH(i,c) for(__typeof((c).begin()) i=(c).begin(),i##_end=(c).end();i!=i##_end;++i)
+#define eprintf(...) fprintf(stderr, __VA_ARGS__)
+
+template<class T> inline void amin(T &x, const T &y) { if (y<x) x=y; }
+template<class T> inline void amax(T &x, const T &y) { if (x<y) x=y; }
+template<class Iter> void rprintf(const char *fmt, Iter begin, Iter end) {
+    for (bool sp=0; begin!=end; ++begin) { if (sp) putchar(' '); else sp = true; printf(fmt, *begin); }
+    putchar('\n');
+}
+
+class Solution {
+public:
+    int X;
+    unordered_map<int, int> mp;
+
+    int rec(LL target) {
+	if (target == 0) return 0;
+	auto it = mp.find(target);
+	if (it != mp.end()) return it->second;
+
+	LL g = 1;
+	int cnt = 0;
+	while (g*X < target) {
+	    g *= X;
+	    cnt++;
+	}
+
+	LL guess = rec(target - g) + (cnt == 0? 2: cnt);
+	if (g < target && g*X - target < target) {
+	    LL tmp = rec(g*X - target) + cnt + 1;
+	    amin(guess, tmp);
+	}
+	mp.emplace(target, guess);
+	return guess;
+    }
+
+    int leastOpsExpressTarget(int x, int target) {
+	mp.clear();
+	X = x;
+	return rec(target) - 1;
+    }
+};
+
+
+```
