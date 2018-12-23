@@ -560,43 +560,45 @@ The maximum width ramp is achieved at (i, j) = (1, 5): A[1] = 0 and A[5] = 5.
 
 思路：先组成A[i], i的pair，然后按A[i]排序。得到的序列，第i个数的左边都是比A[i]小的，只要找到0-i之间最左边的index，然后用A[i,1]做减法，那么就求得了现在最大的gap。
 
-    #include<stdio.h>
-    #include<iostream>
-    #include<vector>
-    #include<algorithm>
-    #include<string>
-    #include<string.h>
-    using namespace std;
+```
+#include<stdio.h>
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#include<string>
+#include<string.h>
+using namespace std;
 
-    typedef long long LL;
-    typedef vector<int> VI;
+typedef long long LL;
+typedef vector<int> VI;
 
-    #define REP(i,n) for(int i=0, i##_len=(n); i<i##_len; ++i)
-    #define EACH(i,c) for(__typeof((c).begin()) i=(c).begin(),i##_end=(c).end();i!=i##_end;++i)
-    #define eprintf(...) fprintf(stderr, __VA_ARGS__)
+#define REP(i,n) for(int i=0, i##_len=(n); i<i##_len; ++i)
+#define EACH(i,c) for(__typeof((c).begin()) i=(c).begin(),i##_end=(c).end();i!=i##_end;++i)
+#define eprintf(...) fprintf(stderr, __VA_ARGS__)
 
-    template<class T> inline void amin(T &x, const T &y) { if (y<x) x=y; }
-    template<class T> inline void amax(T &x, const T &y) { if (x<y) x=y; }
-    template<class Iter> void rprintf(const char *fmt, Iter begin, Iter end) {
-        for (bool sp=0; begin!=end; ++begin) { if (sp) putchar(' '); else sp = true; printf(fmt, *begin); }
-        putchar('\n');
+template<class T> inline void amin(T &x, const T &y) { if (y<x) x=y; }
+template<class T> inline void amax(T &x, const T &y) { if (x<y) x=y; }
+template<class Iter> void rprintf(const char *fmt, Iter begin, Iter end) {
+    for (bool sp=0; begin!=end; ++begin) { if (sp) putchar(' '); else sp = true; printf(fmt, *begin); }
+    putchar('\n');
+}
+class Solution {
+public:
+    int maxWidthRamp(vector<int>& A) {
+    vector<pair<int, int> > t;
+    REP (i, A.size()) t.emplace_back(A[i], i);
+    sort(t.begin(), t.end());
+    int ans = 0;
+    int left = t[0].second;
+    for (int i=1; i<(int)t.size(); i++) {
+        amax(ans, t[i].second - left);
+        amin(left, t[i].second);
     }
-    class Solution {
-    public:
-        int maxWidthRamp(vector<int>& A) {
-        vector<pair<int, int> > t;
-        REP (i, A.size()) t.emplace_back(A[i], i);
-        sort(t.begin(), t.end());
-        int ans = 0;
-        int left = t[0].second;
-        for (int i=1; i<(int)t.size(); i++) {
-            amax(ans, t[i].second - left);
-            amin(left, t[i].second);
-        }
-            
-        return ans;
-        }
-    };
+        
+    return ans;
+    }
+};
+```
 
 **Minimum Area Rectangle II**
 
@@ -610,8 +612,7 @@ Explanation: The minimum area rectangle occurs at [1,2],[2,1],[1,0],[0,1], with 
 
 ![](https://assets.leetcode.com/uploads/2018/12/21/1a.png)
 
-···
-
+```
 #include<stdio.h>
 #include<iostream>
 #include<vector>
@@ -663,9 +664,7 @@ public:
     }
 };
 
-
-···
-
+```
 
 **964. Least Operators to Express Number**
 
