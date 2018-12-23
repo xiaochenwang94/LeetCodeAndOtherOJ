@@ -609,3 +609,54 @@ Output: 2.00000
 Explanation: The minimum area rectangle occurs at [1,2],[2,1],[1,0],[0,1], with an area of 2.
 
 ![](https://assets.leetcode.com/uploads/2018/12/21/1a.png)
+
+#include<stdio.h>
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#include<string>
+#include<string.h>
+using namespace std;
+
+typedef long long LL;
+typedef vector<int> VI;
+
+#define REP(i,n) for(int i=0, i##_len=(n); i<i##_len; ++i)
+#define EACH(i,c) for(__typeof((c).begin()) i=(c).begin(),i##_end=(c).end();i!=i##_end;++i)
+#define eprintf(...) fprintf(stderr, __VA_ARGS__)
+
+template<class T> inline void amin(T &x, const T &y) { if (y<x) x=y; }
+template<class T> inline void amax(T &x, const T &y) { if (x<y) x=y; }
+template<class Iter> void rprintf(const char *fmt, Iter begin, Iter end) {
+    for (bool sp=0; begin!=end; ++begin) { if (sp) putchar(' '); else sp = true; printf(fmt, *begin); }
+    putchar('\n');
+}
+class Solution {
+public:
+    double minAreaFreeRect(vector<vector<int>>& P) {
+	int N = P.size();
+	bool find = false;
+	LL ans = 1LL<<60;
+	REP (a, N) REP (b, N) REP (c, N) REP (d, N) {
+	    if (a == b || a == c || a == d || b == c || b == d || c == d) continue;
+	    if (P[a][0] - P[b][0] != P[d][0] - P[c][0]) continue;
+	    if (P[a][1] - P[b][1] != P[d][1] - P[c][1]) continue;
+
+	    LL x1 = P[a][0] - P[b][0];
+	    LL x2 = P[c][0] - P[b][0];
+	    LL y1 = P[a][1] - P[b][1];
+	    LL y2 = P[c][1] - P[b][1];
+
+	    if (x1 * x2 + y1 * y2 == 0) {
+		LL area = abs(x1 * y2 - x2 * y1);
+		if (area > 0) {
+		    find = true;
+		    amin(ans, area);
+		}
+	    }
+	}
+        
+	if (!find) return 0;
+	return ans;
+    }
+};
