@@ -504,3 +504,108 @@ leetcode 100 Same Tree
                 return False
             return self.dfs(root1.left, root2.left) and self.dfs(root1.right, root2.right)
             
+## Leetcode Contest
+contest 116 大神代码
+
+In a array A of size 2N, there are N+1 unique elements, and exactly one of these elements is repeated N times.
+
+Return the element repeated N times.
+
+Input: [1,2,3,3]
+Output: 3
+
+    #include<map>
+    #include<stdio.h>
+    #include<iostream>
+    #include<vector>
+    #include<algorithm>
+    #include<string>
+    #include<string.h>
+    using namespace std;
+
+    typedef long long LL;
+    typedef vector<int> VI;
+
+    #define REP(i,n) for(int i=0, i##_len=(n); i<i##_len; ++i)
+    #define EACH(i,c) for(__typeof((c).begin()) i=(c).begin(),i##_end=(c).end();i!=i##_end;++i)
+    #define eprintf(...) fprintf(stderr, __VA_ARGS__)
+
+    template<class T> inline void amin(T &x, const T &y) { if (y<x) x=y; }
+    template<class T> inline void amax(T &x, const T &y) { if (x<y) x=y; }
+    template<class Iter> void rprintf(const char *fmt, Iter begin, Iter end) {
+        for (bool sp=0; begin!=end; ++begin) { if (sp) putchar(' '); else sp = true; printf(fmt, *begin); }
+        putchar('\n');
+    }
+    class Solution {
+    public:
+        int repeatedNTimes(vector<int>& A) {
+        map<int, int> mp;
+        EACH (e, A) mp[*e]++;
+        EACH (e, mp) if (e->second > 1) return e->first;
+        return 0;
+        }
+    };
+
+
+**Maximum Width Ramp**
+
+问题描述：Given an array A of integers, a ramp is a tuple (i, j) for which i < j and A[i] <= A[j].  The width of such a ramp is j - i.
+
+Find the maximum width of a ramp in A.  If one doesn't exist, return 0.
+
+Input: [6,0,8,2,1,5]
+Output: 4
+Explanation: 
+The maximum width ramp is achieved at (i, j) = (1, 5): A[1] = 0 and A[5] = 5.
+
+思路：先组成A[i], i的pair，然后按A[i]排序。得到的序列，第i个数的左边都是比A[i]小的，只要找到0-i之间最左边的index，然后用A[i,1]做减法，那么就求得了现在最大的gap。
+
+    #include<stdio.h>
+    #include<iostream>
+    #include<vector>
+    #include<algorithm>
+    #include<string>
+    #include<string.h>
+    using namespace std;
+
+    typedef long long LL;
+    typedef vector<int> VI;
+
+    #define REP(i,n) for(int i=0, i##_len=(n); i<i##_len; ++i)
+    #define EACH(i,c) for(__typeof((c).begin()) i=(c).begin(),i##_end=(c).end();i!=i##_end;++i)
+    #define eprintf(...) fprintf(stderr, __VA_ARGS__)
+
+    template<class T> inline void amin(T &x, const T &y) { if (y<x) x=y; }
+    template<class T> inline void amax(T &x, const T &y) { if (x<y) x=y; }
+    template<class Iter> void rprintf(const char *fmt, Iter begin, Iter end) {
+        for (bool sp=0; begin!=end; ++begin) { if (sp) putchar(' '); else sp = true; printf(fmt, *begin); }
+        putchar('\n');
+    }
+    class Solution {
+    public:
+        int maxWidthRamp(vector<int>& A) {
+        vector<pair<int, int> > t;
+        REP (i, A.size()) t.emplace_back(A[i], i);
+        sort(t.begin(), t.end());
+        int ans = 0;
+        int left = t[0].second;
+        for (int i=1; i<(int)t.size(); i++) {
+            amax(ans, t[i].second - left);
+            amin(left, t[i].second);
+        }
+            
+        return ans;
+        }
+    };
+
+**Minimum Area Rectangle II**
+
+Given a set of points in the xy-plane, determine the minimum area of any rectangle formed from these points, with sides not necessarily parallel to the x and y axes.
+
+If there isn't any rectangle, return 0.
+
+Input: [[1,2],[2,1],[1,0],[0,1]]
+Output: 2.00000
+Explanation: The minimum area rectangle occurs at [1,2],[2,1],[1,0],[0,1], with an area of 2.
+
+![](https://assets.leetcode.com/uploads/2018/12/21/1a.png)
