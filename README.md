@@ -11,26 +11,28 @@ leetcode 416 Partition Equal Subset Sum
 思路：
 可以转换为0/1背包问题，加和除以2就是背包的容量。这道题要求背包恰好装满。
 
-    class Solution(object):
-    def canPartition(self, nums):
-        """
-        :type nums: List[int]
-        :rtype: bool
-        """
-        s = sum(nums)
-        V = s // 2
-        if 2*V != s:
-            return False
-        MIN_INF = -20000 * 101
-        l = [MIN_INF] * (V+1)
-        l[0] = 0
-        for i in range(1, len(nums)+1):
-            for v in range(V, nums[i-1]-1, -1):
-                l[v] = max(l[v], l[v-nums[i-1]]+1)
-        if l[V] > 0 :
-            return True
-        else:
-            return False
+```python
+class Solution(object):
+def canPartition(self, nums):
+    """
+    :type nums: List[int]
+    :rtype: bool
+    """
+    s = sum(nums)
+    V = s // 2
+    if 2*V != s:
+        return False
+    MIN_INF = -20000 * 101
+    l = [MIN_INF] * (V+1)
+    l[0] = 0
+    for i in range(1, len(nums)+1):
+        for v in range(V, nums[i-1]-1, -1):
+            l[v] = max(l[v], l[v-nums[i-1]]+1)
+    if l[V] > 0 :
+        return True
+    else:
+        return False
+```
 
 ## 其他动态规划问题
 
@@ -40,19 +42,20 @@ leetcode 53 Maximum Subarray
 
 思路：e = max(a_i, e)，e代表之前子序列的最大值。
 
-    class Solution(object):
-    def maxSubArray(self, nums):
-        """
-        :type nums: List[int]
-        :rtype: int
-        """
-        e = nums[0]
-        max_e = e
-        for i in range(1, len(nums)):
-            e = max(e+nums[i], nums[i])
-            max_e = max(e, max_e)
-        return max_e
-
+```python
+class Solution(object):
+def maxSubArray(self, nums):
+    """
+    :type nums: List[int]
+    :rtype: int
+    """
+    e = nums[0]
+    max_e = e
+    for i in range(1, len(nums)):
+        e = max(e+nums[i], nums[i])
+        max_e = max(e, max_e)
+    return max_e
+```
 
 ## 按顺序刷题
 
@@ -62,27 +65,29 @@ leetcode 11 Container With Most Water
 
 思路：开始想复杂了，设置两个指针，一个自左向右，另一个自右向左。如果height[i] < height[j] i++ else j--; 一个小优化，当移动一个柱子的时候，可以连续移动到一个比当前大的柱子。
 
-    class Solution(object):
-    def maxArea(self, height):
-        """
-        :type height: List[int]
-        :rtype: int
-        """
-        if len(height) == 0:
-            return 0
-        i, j = 0, len(height)-1
-        ma = 0
-        while i < j:
-            ma = max(ma, (j-i)*min(height[i], height[j]))
-            if height[i] < height[j]:
-                th = height[i]
-                while(height[i]<=th and i<j):
-                    i+=1
-            else:
-                th = height[j]
-                while(height[j]<=th and i<j):
-                    j-=1
-        return ma
+```python
+class Solution(object):
+def maxArea(self, height):
+    """
+    :type height: List[int]
+    :rtype: int
+    """
+    if len(height) == 0:
+        return 0
+    i, j = 0, len(height)-1
+    ma = 0
+    while i < j:
+        ma = max(ma, (j-i)*min(height[i], height[j]))
+        if height[i] < height[j]:
+            th = height[i]
+            while(height[i]<=th and i<j):
+                i+=1
+        else:
+            th = height[j]
+            while(height[j]<=th and i<j):
+                j-=1
+    return ma
+```
 
 leetcode 12 Integer to Roman  
 
@@ -90,25 +95,26 @@ leetcode 12 Integer to Roman
 
 思路：和进制转换一样，把特殊的情况（4, 9, 40, 90, 400, 900)考虑进去就行了。
 
-
-    class Solution(object):
-    def intToRoman(self, num):
-        """
-        :type num: int
-        :rtype: str
-        """
-        d = {
-            1: 'I', 4: 'IV', 5: 'V', 9: 'IX', 
-            10: 'X', 40: 'XL', 50: 'L', 90: 'XC',
-            100: 'C', 400: 'CD', 500: 'D', 900: 'CM', 1000:'M'
-        }
-        l = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
-        i=0
-        ret = ""
-        for x in l:
-            ret+=d[x]*(num//x)
-            num %= x
-        return ret
+```python
+class Solution(object):
+def intToRoman(self, num):
+    """
+    :type num: int
+    :rtype: str
+    """
+    d = {
+        1: 'I', 4: 'IV', 5: 'V', 9: 'IX', 
+        10: 'X', 40: 'XL', 50: 'L', 90: 'XC',
+        100: 'C', 400: 'CD', 500: 'D', 900: 'CM', 1000:'M'
+    }
+    l = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+    i=0
+    ret = ""
+    for x in l:
+        ret+=d[x]*(num//x)
+        num %= x
+    return ret
+```
 
 leetcode 13 Roman to Integer   
 
@@ -116,32 +122,33 @@ leetcode 13 Roman to Integer
 
 思路: 和上一题相反，一个规律就是特殊情况不会出现在正常情况前面，例如：V总是出现在IV前，出现了IV之后就不可能出现V。顺序扫描相加即可。
 
-
-    class Solution(object):
-    def romanToInt(self, s):
-        """
-        :type s: str
-        :rtype: int
-        """
-        d = {
-            'C': 100, 'CD': 400, 'CM': 900, 'D': 500, 'I': 1,
-            'IV': 4, 'IX': 9, 'L': 50, 'M': 1000, 'V': 5, 'X': 10,
-            'XC': 90, 'XL': 40
-        }
-        l = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I']
-        ret = 0
-        idx = 0
-        for x in l:
-            if idx >= len(s):
-                break
-            while idx< len(s) and  s[idx] == x:
-                ret+=d[x]
-                idx+=1
-            while idx < len(s)-1 and s[idx:idx+2] == x:
-                ret+=d[x]
-                idx+=2
-        return ret
-                
+```python
+class Solution(object):
+def romanToInt(self, s):
+    """
+    :type s: str
+    :rtype: int
+    """
+    d = {
+        'C': 100, 'CD': 400, 'CM': 900, 'D': 500, 'I': 1,
+        'IV': 4, 'IX': 9, 'L': 50, 'M': 1000, 'V': 5, 'X': 10,
+        'XC': 90, 'XL': 40
+    }
+    l = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I']
+    ret = 0
+    idx = 0
+    for x in l:
+        if idx >= len(s):
+            break
+        while idx< len(s) and  s[idx] == x:
+            ret+=d[x]
+            idx+=1
+        while idx < len(s)-1 and s[idx:idx+2] == x:
+            ret+=d[x]
+            idx+=2
+    return ret
+```
+           
 leetcode 14 Longest Common Prefix
 
 问题描述：给定一个字符串的list，找出最长的前缀。例如：
@@ -150,31 +157,32 @@ leetcode 14 Longest Common Prefix
     Output: "fl"
 思路：直接便利寻找即可。这道题还有一种巧妙的解法，给字符串排序，之后只需要比较第一个和最后一个字符串即可。
 
-    class Solution(object):
-    def longestCommonPrefix(self, strs):
-        """
-        :type strs: List[str]
-        :rtype: str
-        """
-        size = len(strs)
-        if size == 0:
-            return ""
-        idx = 0
-        flag = True
-        shortest = min([len(x) for x in strs])
-        while flag:
-            if idx == shortest:
+```python
+class Solution(object):
+def longestCommonPrefix(self, strs):
+    """
+    :type strs: List[str]
+    :rtype: str
+    """
+    size = len(strs)
+    if size == 0:
+        return ""
+    idx = 0
+    flag = True
+    shortest = min([len(x) for x in strs])
+    while flag:
+        if idx == shortest:
+            break
+        c = strs[0][idx]
+        for s in strs:
+            if s[idx] != c:
+                flag = False
                 break
-            c = strs[0][idx]
-            for s in strs:
-                if s[idx] != c:
-                    flag = False
-                    break
-            idx+=1
-        if not flag:
-            idx = max(0, idx-1)
-        return strs[0][:idx]
-
+        idx+=1
+    if not flag:
+        idx = max(0, idx-1)
+    return strs[0][:idx]
+```
 
 leetcode 15 3Sum
 
@@ -504,6 +512,37 @@ leetcode 100 Same Tree
                 return False
             return self.dfs(root1.left, root2.left) and self.dfs(root1.right, root2.right)
             
+
+leetcode 388 Longest Absolute File Path
+
+问题描述：给定一个表示路径的字符串，找到其中最长的文件路径。
+
+思路：开始看到文件路径的题目就想到了递归，但是想了很久没有想出来，参考了别人的代码。使用一个map记录每一个level的长度。例如最开始在第一层，那么就使用level=0的长度，代表到达这一层之前的长度。如果在这一层找到了文件，也就是包含.。那么就更新最长的长度。如果没有，那么就是文件夹，把当前的长度给level+1。比较简单的处理方法使用了istringstream可以简单处理掉\n。另外\t或者\n是一个字符长度。
+
+```c++
+class Solution {
+public:
+    int lengthLongestPath(string input) {
+        int res = 0;
+        istringstream iss(input);
+        unordered_map<int, int> m;
+        string line="";
+        while(getline(iss, line)) {
+            int level = line.find_last_of('\t') + 1;
+            int size = line.substr(level).size();
+            if(line.find('.') != string::npos){
+                res = max(res, m[level]+size);
+            } else {
+                m[level+1] = size + m[level]+1;
+            }
+        }
+        return res;
+    }
+};
+```
+
+
+
 ## Leetcode Contest
 contest 116 大神代码
 
@@ -615,58 +654,46 @@ Explanation: The minimum area rectangle occurs at [1,2],[2,1],[1,0],[0,1], with 
 
 ![](https://assets.leetcode.com/uploads/2018/12/21/1a.png)
 
-```cpp
-#include<stdio.h>
-#include<iostream>
-#include<vector>
-#include<algorithm>
-#include<string>
-#include<string.h>
-using namespace std;
+思路：[参考连接](https://blog.csdn.net/fuxuemingzhu/article/details/85223775)
 
-typedef long long LL;
-typedef vector<int> VI;
+长方形有两个性质，满足就是长方形
+* 长方形的两条对角线长度相等
+* 长方形的两条对角线互相平分（中点重合）
 
-#define REP(i,n) for(int i=0, i##_len=(n); i<i##_len; ++i)
-#define EACH(i,c) for(__typeof((c).begin()) i=(c).begin(),i##_end=(c).end();i!=i##_end;++i)
-#define eprintf(...) fprintf(stderr, __VA_ARGS__)
+具体做法是，我们求出任意两个点构成的线段的长度（的平方）、线段的中心坐标，然后用字典保存成（长度，中心点x，中心点y）：[(线段1起点，线段1终点)， (线段2起点，线段2终点)……]。把这个字典弄好了之后，我们需要对字典做一次遍历，依次遍历相同长度和中心点的两个线段构成的长方形的面积，保留最小值就好了。
 
-template<class T> inline void amin(T &x, const T &y) { if (y<x) x=y; }
-template<class T> inline void amax(T &x, const T &y) { if (x<y) x=y; }
-template<class Iter> void rprintf(const char *fmt, Iter begin, Iter end) {
-    for (bool sp=0; begin!=end; ++begin) { if (sp) putchar(' '); else sp = true; printf(fmt, *begin); }
-    putchar('\n');
-}
-class Solution {
-public:
-    double minAreaFreeRect(vector<vector<int>>& P) {
-	int N = P.size();
-	bool find = false;
-	LL ans = 1LL<<60;
-	REP (a, N) REP (b, N) REP (c, N) REP (d, N) {
-	    if (a == b || a == c || a == d || b == c || b == d || c == d) continue;
-	    if (P[a][0] - P[b][0] != P[d][0] - P[c][0]) continue;
-	    if (P[a][1] - P[b][1] != P[d][1] - P[c][1]) continue;
+知道两条对角线坐标，求长方形的面积，方法是找两条临边，然后相乘即可。
 
-	    LL x1 = P[a][0] - P[b][0];
-	    LL x2 = P[c][0] - P[b][0];
-	    LL y1 = P[a][1] - P[b][1];
-	    LL y2 = P[c][1] - P[b][1];
-
-	    if (x1 * x2 + y1 * y2 == 0) {
-		LL area = abs(x1 * y2 - x2 * y1);
-		if (area > 0) {
-		    find = true;
-		    amin(ans, area);
-		}
-	    }
-	}
-        
-	if (!find) return 0;
-	return ans;
-    }
-};
-
+```python
+class Solution(object):
+    def minAreaFreeRect(self, points):
+        """
+        :type points: List[List[int]]
+        :rtype: float
+        """
+        N = len(points)
+        # (l^2, x#, y#) : [(0,1), (1,2)]
+        d = collections.defaultdict(list)
+        for i in range(N - 1):
+            pi = points[i]
+            for j in range(i + 1, N):
+                pj = points[j]
+                l = (pi[0] - pj[0]) ** 2 + (pi[1] - pj[1]) ** 2
+                x = (pi[0] + pj[0]) / 2.0
+                y = (pi[1] + pj[1]) / 2.0
+                d[(l, x, y)].append((i, j))
+        res = float("inf")
+        for l in d.values():
+            M = len(l)
+            for i in range(M - 1):
+                p0, p2 = points[l[i][0]], points[l[i][1]]
+                for j in range(i + 1, M):
+                    p1, p3 = points[l[j][0]], points[l[j][1]]
+                    d1 = math.sqrt((p0[0] - p1[0]) ** 2 + (p0[1] - p1[1]) ** 2)
+                    d2 = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+                    area = d1 * d2
+                    res = min(res, area)
+        return 0 if res == float('inf') else res
 ```
 
 **964. Least Operators to Express Number**
