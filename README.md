@@ -9,7 +9,7 @@ leetcode 416 Partition Equal Subset Sum
 给定一个正整数的numlist，划分成加和相等的两部分。
 
 思路：
-可以转换为0/1背包问题，加和除以2就是背包的容量。这道题要求背包恰好装满。
+可以转换为0/1背包问题，加和除以2就是背包的容量。这道题要求背包恰好装满。
 
 ```python
 class Solution(object):
@@ -34,7 +34,7 @@ def canPartition(self, nums):
         return False
 ```
 
-## 其他动态规划问题
+## 其他动态规划问题
 
 leetcode 53 Maximum Subarray
 
