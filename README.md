@@ -703,6 +703,31 @@ def dfs(self, dividend, divisor, l):
     return 0, dividend
 ```
 
+leetcode 48 Rotate Image
+
+题目描述：给定一个矩阵，顺时针旋转90度。要inplace。
+
+思路：可以按照规律推出每个点的位置，有些复杂。简单的做法是，先做转置，之后再沿着y轴翻转。延伸一下，如果是逆时针旋转90度，转置之后沿着x轴翻转即可。旋转180度，转置之后沿着x=y翻转。
+
+```c++
+class Solution {
+public:
+    void rotate(vector<vector<int>>& matrix) {
+        int n=matrix.size();
+        for(int i=0;i<n;++i) {
+            for(int j=i;j<n;++j) {
+                swap(matrix[i][j], matrix[j][i]);
+            }
+        }    
+        for(int i=0;i<n;++i) {
+            for(int j=0;j<n/2;++j){
+                swap(matrix[i][j], matrix[i][n-j-1]);
+            }
+        }
+    }
+};
+```
+
 leetcode 100 Same Tree
 
 问题描述：给定两棵树，判断是不是相等的两棵树。
