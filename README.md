@@ -62,16 +62,95 @@ def maxSubArray(self, nums):
 
 马拉车算法，马拉车算法的思路是基于已经探索的部分，继续探索未探索的部分。例如，在字符串第i个位置，可以利用前面的信息，直接探索半径大于3的范围内是否为回文串。这样便极大的减小了时间复杂度。首先介绍算法使用的符号和变量，id代表当前能延伸到最右端位置的回文串的中心，mx代表当前能延长到最右端的回文串的最右端位置，i代表我们要探索的字符串的位置，j代表i关于id对称的位置。数组p记录了以每个字符为中心的最长回文串的半径。
 
-算法可以分两种情况讨论：(1)i>=mx，此时我们不能从已有的探索中获得任何有用的信息，因此p[i]=1。(2) i < mx，此时又分为两种情况。(2.1)mx-i>p[j]，见下图。i和j关于id对称，而id-mx到id+mx范围内是回文串，也就是p[j]是包含在p[id]内的一个回文字串，所以p[i]在半径为p[j]的范围内也是一个回文串。因此可以在p[j]的基础上进行探索。所以p[i]=p[j]
+算法可以分两种情况讨论：(1)i>=mx，此时我们不能从已有的探索中获得任何有用的信息，因此p[i]=1。(2) i < mx，此时又分为两种情况。(2.1)mx-i>p[j]，见下图。i和j关于id对称，而id-mx到id+mx范围内是回文串，也就是p[j]是包含在p[id]内的一个回文字串，所以p[i]在半径为p[j]的范围内也是一个回文串。因此可以在p[j]的基础上进行探索。所以p[i]=p[j]。
 
 ![](https://img2018.cnblogs.com/blog/391947/201809/391947-20180916233749134-798948486.png)
 
 (2.2)mx-i<=p[j]，这种情况见下图。以j为中心的回文串的范围超出了以id为中心的回文串，因此我们不知道超出的部分在以i为中心的范围是否还可用。所以p[i]=mx-i。
+
 ![](https://img2018.cnblogs.com/blog/391947/201809/391947-20180916233809298-960515229.png)
 
 综上可以归结为下面一行代码
 ```c++
 p[i] = mx>i?min(p[j], mx-i):1
+```
+
+leetcode 5 Longest Palindromic Substring
+
+题目描述：给定一个字符串，返回最长的回文字串。
+
+思路：上文的马拉车算法。
+
+```c++
+class Solution {
+public:
+    string longestPalindrome(string s) {
+        string ns = "$#";
+        for(int i=0;i<s.size();++i){
+            ns+=s[i];
+            ns+="#";
+        }
+        vector<int> p(ns.size());
+        int max_len = 0, id=0, mx=0, start=0;
+        for(int i=1;i<ns.size();++i){
+            p[i] = mx>i ? min(p[2*id-i], mx-i) : 1;
+            while(ns[i-p[i]] == ns[i+p[i]]) p[i]++;
+            if(i+p[i] > mx) {
+                mx = i+p[i];
+                id = i;
+                if(max_len < p[i]) {
+                    max_len = p[i];
+                    start = (i-p[i])/2;
+                }  
+            }
+        }
+        return s.substr(start, max_len-1);
+    }
+};
+```
+
+leetcode 9 Palindrome Number
+
+题目描述：给定一个数字判断是否为回文数字，121是回文数字，但是-121不是。这道题目要求不能转换为字符串。
+
+```c++
+class Solution {
+public:
+    bool isPalindrome(int x) {
+        if(x<0) return false;
+        int y = 0, xx = x;
+        while(xx>0) {
+            y=y*10+xx%10;
+            xx = xx/10;
+        }
+        return y==x;
+    }
+};
+```
+
+leetcode 125 Valid Palindrome
+
+题目描述：给定一个字符串，判断是否为回文串，不考虑空格，标点符号。例如"A man, a plan, a canal: Panama"就是一个回文串。
+
+```c++
+class Solution {
+public:
+    bool isPalindrome(string s) {
+        string ns="";
+        for(int i=0;i<s.size();++i) {
+            if((s[i]>='a' && s[i] <='z') || (s[i]>='0' && s[i]<='9')) {
+                ns+=s[i];
+            } else if (s[i]>='A' && s[i]<='Z') {
+                ns+=s[i]-'A'+'a';
+            }
+        }
+        int mid = ns.size()/2;
+        for(int i=0;i<=mid;++i){
+            if(ns[i] != ns[ns.size()-i-1]) return false;
+        }
+        return true;
+    }
+};
 ```
 
 ## 按顺序刷题
