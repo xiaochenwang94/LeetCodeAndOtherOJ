@@ -153,6 +153,48 @@ public:
 };
 ```
 
+leetcode 131 Palindrome Partitioning
+
+题目描述：给定一个字符串，求出所有回文字串的划分。例如：输入"aab"，输出为[["aa","b"],["a","a","b"]]。
+
+思路：使用dfs进行递归搜索，每次添加一个字串，如果是回文串继续向后添加，否则不添加。添加进行递归结束之后要清除该串。
+
+```c++
+class Solution {
+public:
+    vector<vector<string>> partition(string s) {
+        vector<vector<string>> result;
+        vector<string> v;
+        dfs(result, v, s);
+        return result;
+    }
+    
+    void dfs(vector<vector<string>> &result, vector<string> v, string s) {
+        if(s.size() == 0) {
+            result.push_back(v);
+            return;
+        }
+        for(int i=0;i<s.size();++i) {
+            if(isPalindrome(s.substr(0, i+1))) {
+                v.push_back(s.substr(0, i+1));
+                dfs(result, v, s.substr(i+1));
+                v.pop_back();
+            }
+        }
+    }
+    
+    bool isPalindrome(string s) {
+        int i=0,j=s.size()-1;
+        while(i<=j) {
+            if(s[i] != s[j]) return false;
+            i++;j--;
+        }
+        return true;
+    }
+};
+```
+
+
 ## 按顺序刷题
 
 leetcode 4 Median of Two Sorted Arrays
