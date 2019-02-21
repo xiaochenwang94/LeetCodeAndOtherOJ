@@ -728,6 +728,704 @@ public:
 };
 ```
 
+leetcode 54 Spiral Matrix
+
+问题描述：旋转输出矩阵
+
+思路：使用四个变量top, right, down, left控制输出。
+
+```cpp
+class Solution {
+public:
+    vector<int> spiralOrder(vector<vector<int>>& matrix) {
+        vector<int> ret;
+        if(matrix.size() == 0) return ret;
+        int left=0, right=matrix[0].size()-1, top=0, down=matrix.size()-1;
+        int i=0, j=0;
+        while(true) {
+            if(right < left) break;
+            while(j<=right) ret.push_back(matrix[i][j++]);
+            j--; top++; i++;
+            if(down < top) break;
+            while(i<=down) ret.push_back(matrix[i++][j]);
+            i--; right--; j--;
+            if(right < left) break;
+            while(j>=left) ret.push_back(matrix[i][j--]);
+            j++; down--; i--;
+            if(down < top) break;
+            while(i>=top) ret.push_back(matrix[i--][j]);
+            i++; left++; j++;
+            
+        }
+        return ret;
+    }
+};
+```
+
+leetcode 58 Merge Intervals
+
+题目描述：合并区间
+
+思路：排序之后合并
+
+```cpp
+/**
+ * Definition for an interval.
+ * struct Interval {
+ *     int start;
+ *     int end;
+ *     Interval() : start(0), end(0) {}
+ *     Interval(int s, int e) : start(s), end(e) {}
+ * };
+ */
+
+bool cmp(const Interval& x, const Interval& y) {
+        return x.start < y.start;
+}
+
+class Solution {
+public:
+    vector<Interval> merge(vector<Interval>& intervals) {
+        vector<Interval> ret;
+        if(intervals.size() == 0) return ret;
+        sort(intervals.begin(), intervals.end(), cmp);
+        int end=intervals[0].end;
+        int start=intervals[0].start;
+        ret.push_back(intervals[0]);
+        for(int i=1;i<intervals.size();++i) {
+            Interval tmp = ret.back();
+            ret.pop_back();
+            if(intervals[i].start <= tmp.end) {
+                Interval new_tmp(tmp.start, max(tmp.end, intervals[i].end));
+                ret.push_back(new_tmp);
+            } else {
+                ret.push_back(tmp);
+                ret.push_back(intervals[i]);
+            }
+        }
+        return ret;
+    }
+};
+```
+
+leetcode 60 Permutation Sequence
+
+题目描述：给定n和k，数字由[1,2,3,...,n]组成，求第k小的数。
+
+思路：跳跃查找。
+
+```cpp
+class Solution {
+public:
+    string getPermutation(int n, int k) {
+        string ret="";
+        if(n == 0) return ret;
+        vector<int> v;
+        int prod = 1;
+        for(int i=1;i<=n;++i) {
+            ret += i + '0';
+            prod *= i;
+            v.push_back(i);
+        }
+        int i=0;
+        k--;
+        while(i<n) {
+            prod /= n-i;
+            ret[i] = v[k / prod]+'0';
+            v.erase(k/prod+v.begin());
+            i++;
+            k = k % prod;
+        }
+        return ret;
+    }
+};
+```
+
+leetcode 61 Rotate List
+
+题目描述：从第k个元素断开，重新拼接链表
+
+思路：如果链表长度为3，旋转3次相当于没有旋转。所以使用k%len，len为链表的长度。然后使用快慢指针确定断开的地方。
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* rotateRight(ListNode* head, int k) {
+        ListNode *p=head, *q=head;
+        int len=0;
+        while(p) {
+            len++;
+            p=p->next;
+        }
+        if(len == 0) {
+            return head;
+        }
+        int step = k%len;
+        p=head;
+        while(step>0) {
+            p=p->next;
+            step--;
+        }
+        while(p && p->next) {
+            q=q->next;
+            p=p->next;
+        }
+        if(p) {
+            p->next = head;
+            head = q->next;
+            q->next=NULL;
+        }
+        return head;
+    }
+};
+```
+
+leetcode 62 Unique Paths
+
+题目描述：机器人只能向下或者向右走，求从左上到右下的方法数量。
+
+思路：二维动归，只需要左边和上边，一维也可以。
+
+```cpp
+class Solution {
+public:
+    int uniquePaths(int m, int n) {
+        vector<vector<int>> v(m, vector<int>(n, 0));
+        cout<<v.size()<<endl;
+        cout<<v[0].size()<<endl;
+        for(int i=0;i<m;++i) {
+            v[i][0] = 1;
+        }
+        for(int i=0;i<n;++i) {
+            v[0][i] = 1;
+        }
+        for(int i=1;i<m;++i) {
+            for(int j=1;j<n;++j) {
+                v[i][j] = v[i-1][j] + v[i][j-1];
+            }
+        }
+        return v[m-1][n-1];
+    }
+};
+
+class Solution {
+public:
+    int uniquePaths(int m, int n) {
+        vector<int> v(n, 0);
+        for(int i=0;i<n;++i) {
+            v[i] = 1;
+        }
+        for(int i=1;i<m;++i) {
+            for(int j=1;j<n;++j) {
+                v[j] += v[j-1];
+            }
+        }
+        return v[n-1];
+    }
+};
+```
+
+leetcode 63 Unique Paths II
+
+题目描述：和上一题类似，但是路线上有障碍。
+
+思路：如果当前格子有障碍，那么通行的方式变成0即可。
+
+```cpp
+class Solution {
+public:
+    int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {
+        vector<long long int> v(obstacleGrid[0].size(), 0);
+        for(int i=0;i<obstacleGrid[0].size();++i) {
+            if(obstacleGrid[0][i] != 1) {
+                v[i] = 1;
+            } else {
+                break;
+            }
+        }
+        for(int i=1;i<obstacleGrid.size();++i) {
+            for(int j=0;j<obstacleGrid[0].size();++j) {
+                if(obstacleGrid[i][j] == 1) {
+                    v[j] = 0;
+                } else {
+                    if(j != 0)
+                        v[j] += v[j-1];    
+                    else
+                        v[j] = obstacleGrid[i][j] == 1 ? 0 : v[j];
+                }
+            }
+        }
+        return v[obstacleGrid[0].size()-1];
+    }
+};
+```
+
+leetcode 64 Minimum Path Sum
+
+题目描述：给定一个路径矩阵，求从左上到右下的最短距离，只能向右或者向下走。
+
+思路：动归。
+
+```cpp
+class Solution {
+public:
+    int minPathSum(vector<vector<int>>& grid) {
+        int path = 0;
+        int m=grid.size(), n=grid[0].size();
+        vector<long long int> v(n, 0);
+        for(int i=0;i<n;++i) {
+            if(i>0) v[i] = grid[0][i] + v[i-1];
+            else v[i] = grid[0][i];
+        }
+        for(int i=1;i<m;++i) {
+            for(int j=0;j<n;++j) {
+                if(j == 0) {
+                    v[j] = grid[i][0] + v[j];
+                    continue;
+                }
+                v[j] = min(v[j], v[j-1]) + grid[i][j];
+            }
+        }
+        return v[n-1];
+    }
+};
+```
+
+leetcode 98 Validate Binary Search Tree
+
+问题描述：给定一棵二叉搜索树，判断是否合法
+
+思路：按照二叉搜索树的性质判断
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool isValidBST(TreeNode* root) {
+        return !root || dfs(root, LONG_MIN, LONG_MAX);
+    }
+    
+    bool dfs(TreeNode* root, long low, long high) {
+        if(!root) {
+            return true;
+        } 
+        if(root->val <= low || root->val >= high) {
+            return false;
+        }
+        return dfs(root->left, low, root->val) && dfs(root->right, root->val, high);
+    }
+};
+```
+
+leetcode 67 Add Binary
+
+问题描述：二进制大整数相加
+
+思路：按顺序相加即可，写法值得记录。
+
+```cpp
+class Solution {
+public:
+    string addBinary(string a, string b) {
+        int len1 = a.size();
+        int len2 = b.size();
+        string sum = "";
+        int carry = 0;
+        while(len1 > 0 || len2 > 0) {
+            int first = len1 <= 0 ? 0 : a[len1-1]-'0';
+            int second = len2 <= 0 ? 0 : b[len2-1]-'0';
+            int tsum = first + second + carry;
+            carry = tsum / 2;
+            sum = (char)(tsum%2+'0') + sum;
+            len1--; len2--;
+        }
+        if(carry > 0) sum = '1' + sum;
+        return sum;
+    }
+};
+```
+
+leetcode 69 Sqrt(x)
+
+问题描述：给定x，返回sqrt(x)的整数部分。
+
+思路：
+
+1. 从小到大遍历小于x的数字，知道i*i>x，返回i-1;
+
+```cpp
+class Solution {
+public:
+    int mySqrt(int x) {
+        for(long long int i=1;i<=x;++i) {
+            if(i*i>x) return i-1;
+            if(i*i == x) return i;
+        }
+        return x;
+    }
+};
+```
+
+2. 
+
+leetcode 73 Set Matrix Zeroes
+
+问题描述：矩阵中如果某个数字为0，把它所在的行和列都变成0，要求inplace变化。
+
+思路：使用一个行长度和列长度的vector，如果某个数字为0，把row，col位置变成0。最后统一变化。
+
+```cpp
+class Solution {
+public:
+    void setZeroes(vector<vector<int>>& matrix) {
+        vector<int> row(matrix.size(), 1), col(matrix[0].size(), 1);
+        for(int i=0;i<matrix.size();++i) {
+            for(int j=0;j<matrix[i].size();++j) {
+                if(matrix[i][j] == 0) {
+                    row[i] = 0;
+                    col[j] = 0;
+                }
+            }
+        }
+        for(int i=0;i<row.size();++i) {
+            if(row[i] == 0) {
+                for(int j=0;j<matrix[i].size();++j) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+        for(int i=0;i<col.size();++i) {
+            if(col[i] == 0) {
+                for(int j=0;j<matrix.size();++j) {
+                    matrix[j][i] = 0;
+                }
+            }
+        }
+    }
+};
+```
+
+leetcode 74 Search a 2D Matrix
+
+问题描述：给定一个矩阵，矩阵的每一行递增，每一列递增，前一行的最大数字小于本行的最小数字。查找给定的数字是否在矩阵中。
+
+思路：从左下角查询，如果x比matrix[i][j]大，向右，小向左。和240题目完全相同。
+
+```cpp
+class Solution {
+public:
+    bool searchMatrix(vector<vector<int>>& matrix, int target) {
+        int i=matrix.size()-1, j=0;
+        while(i>=0 && j<matrix[0].size()) {
+            if(target == matrix[i][j]) return true;
+            if(target > matrix[i][j]) {
+                j++;
+            } else {
+                i--;
+            }
+        }
+        return false;
+    }
+};
+```
+
+leetcode 75 Sort Colors
+
+问题描述：给定一个0，1，2的序列，对其进行排序。
+
+思路：
+1. 使用Counting Sort，把每个数字数一遍，然后写一遍。
+
+```cpp
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        vector<int> cnts(3, 0);
+        int size = nums.size();
+        for(int i=0;i<size;++i) {
+            cnts[nums[i]]++;
+        }
+        for(int i=0;i<size;++i) {
+            if(i<cnts[0]) {
+                nums[i] = 0;
+            } else if(i < cnts[0] + cnts[1]) {
+                nums[i] = 1;
+            } else {
+                nums[i] = 2;
+            }
+        }
+    }
+};
+```
+2. 可以只扫描一遍，使用0，2指针分别指向0的位置和2的位置。如果当前扫描到0和0指针交换，扫描到2和2指针交换。
+
+```cpp
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        int size=nums.size(), zero=0, two=size-1;
+        for(int i=0;i<=two;++i) {
+            if(nums[i] == 0) {
+                swap(nums[i], nums[zero++]);
+            } else if (nums[i] == 2) {
+                swap(nums[i--], nums[two--]);
+            }
+        }
+    }
+};
+```
+
+leetcode 78 Subsets
+
+题目描述：给定一个集合，求出集合的所有子集。
+
+思路：
+1. 针对每一个数字有两种策略，取或者不取。使用dfs进行递归。
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> subsets(vector<int>& nums) {
+        vector<vector<int>> res;
+        vector<int> cur;
+        dfs(res, cur, 0, nums);
+        return res;
+    }
+    
+    void dfs(vector<vector<int>> &res, vector<int> cur, int idx, vector<int> &nums) {
+        if(idx == nums.size()) {
+            res.push_back(cur);
+            return ;
+        } 
+        cur.push_back(nums[idx]);
+        dfs(res, cur, idx+1, nums);
+        cur.pop_back();
+        dfs(res, cur, idx+1, nums);
+    }
+};
+```
+
+2. 我们可以一位一位的网上叠加，比如对于题目中给的例子[1,2,3]来说，最开始是空集，那么我们现在要处理1，就在空集上加1，为[1]，现在我们有两个自己[]和[1]，下面我们来处理2，我们在之前的子集基础上，每个都加个2，可以分别得到[2]，[1, 2]，那么现在所有的子集合为[], [1], [2], [1, 2]，同理处理3的情况可得[3], [1, 3], [2, 3], [1, 2, 3], 再加上之前的子集就是所有的子集合
+
+```cpp
+class Solution {
+public:
+    vector<vector<int> > subsets(vector<int> &S) {
+        vector<vector<int> > res(1);
+        sort(S.begin(), S.end());
+        for (int i = 0; i < S.size(); ++i) {
+            int size = res.size();
+            for (int j = 0; j < size; ++j) {
+                res.push_back(res[j]);
+                res.back().push_back(S[i]);
+            }
+        }
+        return res;
+    }
+};
+```
+
+3. 把数组中所有的数分配一个状态，true表示这个数在子集中出现，false表示在子集中不出现，那么对于一个长度为n的数组，每个数字都有出现与不出现两种情况，所以共有2n中情况，那么我们把每种情况都转换出来就是子集了，我们还是用题目中的例子, [1 2 3]这个数组共有8个子集，每个子集的序号的二进制表示，把是1的位对应原数组中的数字取出来就是一个子集，八种情况都取出来就是所有的子集了
+
+```cpp
+class Solution {
+public:
+    vector<vector<int> > subsets(vector<int> &S) {
+        vector<vector<int> > res;
+        sort(S.begin(), S.end());
+        int max = 1 << S.size();
+        for (int k = 0; k < max; ++k) {
+            vector<int> out = convertIntToSet(S, k);
+            res.push_back(out);
+        }
+        return res;
+    }
+    vector<int> convertIntToSet(vector<int> &S, int k) {
+        vector<int> sub;
+        int idx = 0;
+        for (int i = k; i > 0; i >>= 1) {
+            if ((i & 1) == 1) {
+                sub.push_back(S[idx]);
+            }
+            ++idx;
+        }
+        return sub;
+    }
+};
+```
+
+leetcode 79 Word Search
+
+问题描述：给定一个字符矩阵和一个单词，查找单词是否在矩阵中。
+
+思路：图的dfs搜索。
+
+```cpp
+class Solution {
+public:
+    bool exist(vector<vector<char>>& board, string word) {
+        int m = board.size(), n = board[0].size();
+        vector<vector<bool>> isVisited(m, vector<bool>(n, false));
+        for(int i=0;i<m;++i) {
+            for(int j=0;j<n;++j) {
+                if(board[i][j] == word[0]) {
+                    isVisited[i][j] = true;
+                    if(dfs(board, word.substr(1), isVisited, i, j)) {
+                        return true;
+                    } 
+                    isVisited[i][j] = false;
+                }
+            }
+        }
+        return false;
+    }
+    
+    bool dfs(vector<vector<char>>& board, string word, vector<vector<bool>> &isVisited, int i, int j) {
+        if(word.size() == 0) {
+            return true;
+        }
+        bool res = false;
+        if(i>0 && !isVisited[i-1][j] && word[0] == board[i-1][j]) {
+            isVisited[i-1][j] = true;
+            res = dfs(board, word.substr(1), isVisited, i-1, j);
+            isVisited[i-1][j] = false;
+        }
+        if(res) {
+                return true;
+        }
+        if(j>0 && !isVisited[i][j-1] && word[0] == board[i][j-1]) {
+            isVisited[i][j-1] = true;
+            res = dfs(board, word.substr(1), isVisited, i, j-1);
+            isVisited[i][j-1] = false;
+        }
+        if(res) {
+            return true;
+        }
+        if(i<board.size()-1 && !isVisited[i+1][j] && word[0] == board[i+1][j]) {
+            isVisited[i+1][j] = true;
+            res = dfs(board, word.substr(1), isVisited, i+1, j);
+            isVisited[i+1][j] = false;
+        }
+        if(res) {
+            return true;
+        }
+        if(j<board[0].size()-1 && !isVisited[i][j+1] && word[0] == board[i][j+1]) {
+            isVisited[i][j+1] = true;
+            res = dfs(board, word.substr(1), isVisited, i, j+1);
+            isVisited[i][j+1] = false;
+        }
+        return res;
+    }
+};
+```
+
+leetcode 80 Remove Duplicates from Sorted Array II
+
+问题描述：给定一个有序的数组，去除出现一次以上的数字。
+
+思路：使用快慢指针，慢指针指向保留的位置，如果重复超过一次，那么不保留，快指针指向下一个。
+
+```cpp
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+        int res = 1, cnt=1, size=nums.size();
+        if(size == 0) return 0;
+        int old = nums[0]; 
+        for(int i=1;i<size;++i) {
+            if(nums[i] == old && cnt == 1) {
+                nums[res++] = nums[i];
+                cnt--;
+            } else if(nums[i] != old) {
+                nums[res++] = nums[i];
+                cnt = 1;
+            }
+            old=nums[i];
+        }
+        return res;
+    }
+};
+```
+
+leetcode 94 Binary Tree Inorder Traversal
+
+问题描述：中序遍历
+
+思路：递归
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> res;
+        dfs(res, root);
+        return res;
+    }
+    
+    void dfs(vector<int> &res, TreeNode* root) {
+        if(!root) {
+            return;
+        }
+        dfs(res, root->left);
+        res.push_back(root->val);
+        dfs(res, root->right);
+    }
+};
+```
+
+leetcode 96 Unique Binary Search Trees
+
+问题描述：给定n，求1~n的数字能够组成的BST的种数。
+
+思路：动归，以k为根，那么左子树是1~k-1，右子树是k+1 ~n。那么num[k]=num[k-1]+num[n-k-1+1]。归纳公式如下：$$C_0=1 \ \  and \ \ C_{n+1}=\sum_{i=0}^nC_iC_{n-i}$$
+
+以上公式就是卡塔兰数。
+
+```cpp
+class Solution {
+public:
+    int numTrees(int n) {
+        vector<int> v;
+        v.push_back(1);
+        v.push_back(1);
+        for(int i=2;i<=n;++i) {
+            int num=0;
+            for(int j=0;j<i;++j) {
+                num+=v[j]*v[i-1-j];
+            }
+            v.push_back(num);
+        }
+        return v[n];
+    }
+    
+};
+```
+
 leetcode 100 Same Tree
 
 问题描述：给定两棵树，判断是不是相等的两棵树。
@@ -789,6 +1487,78 @@ public:
 };
 ```
 
+leetcode 415. Add Strings
+
+题目描述：字符串加法
+
+思路：按位加，学习到了简洁的写法
+
+```c++
+class Solution {
+public:
+    string addStrings(string num1, string num2) {
+        int i=num1.size()-1, j=num2.size()-1;
+        int carry = 0;
+        string result = "";
+        while(i>=0||j>=0) {
+            int a = i>=0 ? num1[i--] - '0' : 0;
+            int b = j>=0 ? num2[j--] - '0' : 0;
+            int r = a + b + carry;
+            carry = r / 10;
+            result = (char)(r % 10 + '0') + result;
+        }
+        return carry>0?(char)(carry+'0')+result:result;
+        
+    }
+};
+```
+
+leetcode 796. Rotate String
+
+题目描述：给定两个字符串，判断A能否通过若干次移动变成B
+
+思路：令C=A+A，如果C中能够找到B那么A就可以通过若干次移动变成C。
+
+```c++
+class Solution {
+public:
+    bool rotateString(string A, string B) {
+        string c = A+A;
+        return A.size() == B.size() && c.find(B) != c.npos;
+    }
+};
+```
+
+leetcode 812. Largest Triangle Area
+
+题目描述：给定一系列点，求面积最大的三角形
+
+思路：套公式如下：
+![](https://images2018.cnblogs.com/blog/391947/201808/391947-20180827003457034-465504228.jpg)
+
+```c++
+class Solution {
+public:
+    double largestTriangleArea(vector<vector<int>>& points) {
+        double max_len = 0;
+        for(int i=0;i<points.size()-2;++i) {
+            for(int j=i+1;j<points.size()-1;++j) {
+                for(int k=j+1;k<points.size();++k) {
+                    int p1x = points[i][0], p1y = points[i][1];
+                    int p2x = points[j][0], p2y = points[j][1];
+                    int p3x = points[k][0], p3y = points[k][1];
+                    double size = p1x*p2y-p2x*p1y+p2x*p3y-p2y*p3x+p3x*p1y-p3y*p1x;
+                    size = abs(size) / 2;
+                    if(size>max_len) {
+                        max_len = size;
+                    }
+                }
+            }
+        }
+        return max_len;
+    }
+};
+```
 
 
 ## Leetcode Contest
