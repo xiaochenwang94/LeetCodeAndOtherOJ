@@ -5,7 +5,7 @@
 
 leetcode 416 Partition Equal Subset Sum 
 
-问题描述：
+题目描述：
 给定一个正整数的numlist，划分成加和相等的两部分。
 
 思路：
@@ -38,7 +38,7 @@ def canPartition(self, nums):
 
 leetcode 53 Maximum Subarray
 
-问题描述：给定一个数组，寻找最大的自数组。
+题目描述：给定一个数组，寻找最大的自数组。
 
 思路：e = max(a_i, e)，e代表之前子序列的最大值。
 
@@ -194,6 +194,201 @@ public:
 };
 ```
 
+## 二分查找
+
+leetcode 33 Search in Rotated Sorted Array
+
+题目描述：在一个经过旋转的有序数组中查找给定的元素。
+
+```
+Input: nums = [4,5,6,7,0,1,2], target = 0
+Output: 4
+
+Input: nums = [4,5,6,7,0,1,2], target = 3
+Output: -1
+```
+
+思路：二分查找，规律为，当nums[mid] > nums[right]的时候，数组左边有序。反之数组右边有序。可以判断查找目标在不在有序的一边，这样每次可以跳过一半的数据。
+
+```cpp
+class Solution {
+public:
+    int search(vector<int>& nums, int target) {
+        int left = 0, right = nums.size()-1;
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if(nums[mid] == target) return mid;
+            if(nums[mid] < nums[right]) {
+                if(nums[mid] < target && nums[right] >= target) left = mid + 1;
+                else right = mid-1;
+            } else {
+                if(nums[mid] > target && nums[left] <= target) right = mid - 1;
+                else left = mid+1;
+            }
+        }
+        return -1;
+    }
+};
+```
+
+leetcode 81 Search in Rotated Sorted Array II
+
+题目描述：同上一题一样是在旋转过的有序数组中查找目标，不同的是数组中可以存在重复的元素。
+
+思路：和上一题相似，只有一点不同，当nums[mid] = nums[right]的时候，既可能在左边，也可能在右边。因此相等的时候就把right左移。
+
+```cpp
+class Solution {
+public:
+    bool search(vector<int>& nums, int target) {
+        int left=0, right=nums.size()-1;
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if(nums[mid] == target) return true;
+            if(nums[mid] < nums[right]) {
+                if(nums[mid] < target && nums[right] >= target) left = mid + 1;
+                else right = mid - 1;
+            } else if(nums[mid] > nums[right]) {
+                if(nums[mid] > target && nums[left] <= target) right = mid - 1;
+                else left = mid + 1;
+            } else {
+                right--;
+            }
+        }
+        return false;
+    }
+};
+```
+
+## 链表问题
+
+### 反转链表
+leetcode 206 Reverse Linked List
+
+题目描述：给定一个链表，将其反转。
+
+思路：
+1. 新建一个node
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+        ListNode *new_head=NULL, *p;
+        while(head) {
+            p = head->next;
+            head->next = new_head;
+            new_head = head;
+            head = p;
+        }
+        return new_head;
+    }
+};
+```
+
+2. 利用递归
+
+```cpp
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+        if (!head || !head->next) return head;
+        ListNode *newHead = reverseList(head->next);
+        head->next->next = head;
+        head->next = NULL;
+        return newHead;
+    }
+};
+```
+
+leetcode 92 Reverse Linked List II
+
+题目描述：给定一个链表，反转从m到n的节点。
+
+思路：为了方便，加入一个虚拟的头节点，使用pre记录要反转的前一个节点，使用cur记录当前反转到的位置，使用t记录cur的下一个节点。
+
+每次做的就是把t放到pre后面，cur变成t的下一个。
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* reverseBetween(ListNode* head, int m, int n) {
+        ListNode *dummy_head = new ListNode(-1);
+        dummy_head->next = head;
+        ListNode *pre = dummy_head;
+        for(int i=0;i<m-1;++i) {
+            pre = pre->next;
+        }
+        ListNode *cur = pre->next;
+        for(int i=m;i<n;++i) {
+            ListNode *t = cur->next;
+            cur->next = t->next;
+            t->next = pre->next;
+            pre->next = t;
+        }
+        return dummy_head->next;
+    }
+};
+```
+
+
+leetcode 24 Swap Nodes in Pairs
+
+题目描述：依次链表旋转两个相邻的节点。
+
+```
+Given 1->2->3->4, you should return the list as 2->1->4->3.
+```
+
+思路：头节点可能改变的情况下，加入虚拟节点。依次旋转即可。
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* swapPairs(ListNode* head) {
+        ListNode *dummy_node = new ListNode(-1);
+        dummy_node->next = head;
+        ListNode *pre = dummy_node;
+        while(pre->next) {
+            ListNode *cur = pre->next;
+            if(cur && cur->next) {
+                pre->next = cur->next;
+                cur->next = cur->next->next;
+                pre->next->next = cur;
+                pre = cur;
+                cur = cur -> next;
+            } else {
+                break;
+            }
+        }
+        return dummy_node->next;
+    }
+};
+```
 
 ## 按顺序刷题
 
@@ -269,7 +464,7 @@ public:
 
 leetcode 11 Container With Most Water    
 
-问题描述：找出能装的最多水的两个柱子。
+题目描述：找出能装的最多水的两个柱子。
 
 思路：开始想复杂了，设置两个指针，一个自左向右，另一个自右向左。如果height[i] < height[j] i++ else j--; 一个小优化，当移动一个柱子的时候，可以连续移动到一个比当前大的柱子。
 
@@ -299,7 +494,7 @@ def maxArea(self, height):
 
 leetcode 12 Integer to Roman  
 
-问题描述：整数转换为罗马数字
+题目描述：整数转换为罗马数字
 
 思路：和进制转换一样，把特殊的情况（4, 9, 40, 90, 400, 900)考虑进去就行了。
 
@@ -326,7 +521,7 @@ def intToRoman(self, num):
 
 leetcode 13 Roman to Integer   
 
-问题描述：罗马数字转换为整数
+题目描述：罗马数字转换为整数
 
 思路: 和上一题相反，一个规律就是特殊情况不会出现在正常情况前面，例如：V总是出现在IV前，出现了IV之后就不可能出现V。顺序扫描相加即可。
 
@@ -359,7 +554,7 @@ def romanToInt(self, s):
            
 leetcode 14 Longest Common Prefix
 
-问题描述：给定一个字符串的list，找出最长的前缀。例如：
+题目描述：给定一个字符串的list，找出最长的前缀。例如：
     
     Input: ["flower","flow","flight"]
     Output: "fl"
@@ -394,7 +589,7 @@ def longestCommonPrefix(self, strs):
 
 leetcode 15 3Sum
 
-问题描述：找出数组中三个相加为0的数字，返回所有结果。
+题目描述：找出数组中三个相加为0的数字，返回所有结果。
 
 思路：这道题参考了答案，弄个半个小时才通过。开始使用暴力求解，果断超时。解法中先把列表排序，然后从左到右扫一次，每次固定一个数字，找另外两个数字的和与当前数字相反。当扫到正数就可以结束了，因子正数后面都是正数，不可能找到结果。
 
@@ -440,7 +635,7 @@ def threeSum(self, nums):
 
 leetcode 16 3Sum Closest
 
-问题描述: 和上一道题相似，现在要求加和和给定的target最接近。
+题目描述: 和上一道题相似，现在要求加和和给定的target最接近。
 
 思路：和上一题一样，固定一个数字，找另外两个数字。使用两个index从左到右，从右到左，比三层循环次数要少，可以加速。其他剪枝方法不太好用。
 
@@ -482,7 +677,7 @@ def threeSumClosest(self, nums, target):
 
 leetcode 18 4Sum
 
-问题描述：四个数字加和
+题目描述：四个数字加和
 
 思路：和前一道题目一样，套一层for循环就行了。
 
@@ -530,7 +725,7 @@ def fourSum(self, nums, target):
                     
 leetcode 19 Remove Nth Node From End of List
 
-问题描述：删除倒数第n个数字
+题目描述：删除倒数第n个数字
 
 思路：两个指针，第一个先跑n个，第二个再跑。然后删除。
 
@@ -563,7 +758,7 @@ class Solution(object):
 
 leetcode 21 Merge Two Sorted Lists
 
-问题描述：合并两个有序的链表
+题目描述：合并两个有序的链表
 
 思路：参考了大神的代码，递归写法。每次比较l1, l2如果l1.val > l2.val 那么交换两段列表，然后l1向后走一个。
 
@@ -592,7 +787,7 @@ class Solution(object):
 
 leetcode 22 Generate Parentheses
 
-问题描述：给定n对括号，求出所有可能。
+题目描述：给定n对括号，求出所有可能。
 
 思路：
 
@@ -664,7 +859,7 @@ def dfs(self, left, right, val, ret):
 
 leetcode 29 Divide Two Integers
 
-问题描述：给定两个正数，求整除之后的结果。不能用乘法，除法，mod。
+题目描述：给定两个正数，求整除之后的结果。不能用乘法，除法，mod。
 
 思路：使用递归模拟，当除数大于被除数直接返回，否则加上初始被除数的倍数。**这道题应该注意题目描述的边界条件，以及两个数符号相反的情况！**
 
@@ -730,7 +925,7 @@ public:
 
 leetcode 54 Spiral Matrix
 
-问题描述：旋转输出矩阵
+题目描述：旋转输出矩阵
 
 思路：使用四个变量top, right, down, left控制输出。
 
@@ -1001,7 +1196,7 @@ public:
 
 leetcode 98 Validate Binary Search Tree
 
-问题描述：给定一棵二叉搜索树，判断是否合法
+题目描述：给定一棵二叉搜索树，判断是否合法
 
 思路：按照二叉搜索树的性质判断
 
@@ -1035,7 +1230,7 @@ public:
 
 leetcode 67 Add Binary
 
-问题描述：二进制大整数相加
+题目描述：二进制大整数相加
 
 思路：按顺序相加即可，写法值得记录。
 
@@ -1063,7 +1258,7 @@ public:
 
 leetcode 69 Sqrt(x)
 
-问题描述：给定x，返回sqrt(x)的整数部分。
+题目描述：给定x，返回sqrt(x)的整数部分。
 
 思路：
 
@@ -1086,7 +1281,7 @@ public:
 
 leetcode 73 Set Matrix Zeroes
 
-问题描述：矩阵中如果某个数字为0，把它所在的行和列都变成0，要求inplace变化。
+题目描述：矩阵中如果某个数字为0，把它所在的行和列都变成0，要求inplace变化。
 
 思路：使用一个行长度和列长度的vector，如果某个数字为0，把row，col位置变成0。最后统一变化。
 
@@ -1123,7 +1318,7 @@ public:
 
 leetcode 74 Search a 2D Matrix
 
-问题描述：给定一个矩阵，矩阵的每一行递增，每一列递增，前一行的最大数字小于本行的最小数字。查找给定的数字是否在矩阵中。
+题目描述：给定一个矩阵，矩阵的每一行递增，每一列递增，前一行的最大数字小于本行的最小数字。查找给定的数字是否在矩阵中。
 
 思路：从左下角查询，如果x比matrix[i][j]大，向右，小向左。和240题目完全相同。
 
@@ -1147,7 +1342,7 @@ public:
 
 leetcode 75 Sort Colors
 
-问题描述：给定一个0，1，2的序列，对其进行排序。
+题目描述：给定一个0，1，2的序列，对其进行排序。
 
 思路：
 1. 使用Counting Sort，把每个数字数一遍，然后写一遍。
@@ -1272,7 +1467,7 @@ public:
 
 leetcode 79 Word Search
 
-问题描述：给定一个字符矩阵和一个单词，查找单词是否在矩阵中。
+题目描述：给定一个字符矩阵和一个单词，查找单词是否在矩阵中。
 
 思路：图的dfs搜索。
 
@@ -1337,7 +1532,7 @@ public:
 
 leetcode 80 Remove Duplicates from Sorted Array II
 
-问题描述：给定一个有序的数组，去除出现一次以上的数字。
+题目描述：给定一个有序的数组，去除出现一次以上的数字。
 
 思路：使用快慢指针，慢指针指向保留的位置，如果重复超过一次，那么不保留，快指针指向下一个。
 
@@ -1363,9 +1558,230 @@ public:
 };
 ```
 
+leetcode 82 Remove Duplicates from Sorted List II
+
+题目描述：链表去重，删掉所有重复的元素
+
+```
+Input: 1->2->3->3->4->4->5
+Output: 1->2->5
+```
+
+思路：链表的常规操作，因为head可能会改变，因此添加一个虚拟的节点。主要学习写法，通过比较cur是否等于pre->next判断有没有重复节点。
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* deleteDuplicates(ListNode* head) {
+        if(!head) return head;
+        ListNode *dummy_node = new ListNode(-1);
+        dummy_node ->next = head;
+        ListNode *pre = dummy_node, *cur = head;
+        while(cur) {
+            while(cur->next && cur->next->val == cur->val) cur = cur->next;
+            if(pre->next != cur) {
+                cur = cur -> next;
+                pre->next = cur;
+            } else {
+                pre->next = cur;
+                pre = cur;
+            }
+        }
+        return dummy_node -> next;
+    }
+};
+```
+
+leetcode 86 Partition List
+
+题目描述：给定一个链表，根据给定的x分成两部分，一部分比x小，另一部分大于等于x。
+
+思路：新建两个node，分别存储两部分。
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* partition(ListNode* head, int x) {
+        ListNode *less, *greater, *p, *q;
+        less = new ListNode(-1);
+        greater = new ListNode(-1);
+        p = less;
+        q = greater;
+        while(head) {
+            if(head->val < x) {
+                p->next = head; 
+                p = p->next;
+            } else {
+                q->next = head;
+                q = q->next;
+            }
+            head = head ->next;
+        }
+        p->next = greater->next;
+        q->next = NULL;
+        return less->next;
+    }
+};
+```
+
+leetcode 88 Merge Sorted Array
+
+题目描述：归并排序，给定两个排好序的数组
+
+```
+Input:
+nums1 = [1,2,3,0,0,0], m = 3
+nums2 = [2,5,6],       n = 3
+
+Output: [1,2,2,3,5,6]
+```
+
+思路：倒序排序，依次把两个数组的数字放到末尾。
+
+```cpp
+class Solution {
+public:
+    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {
+        int i=m-1, j=n-1, k=m+n-1;
+        while(i>=0 && j>=0) {
+            if(nums1[i] < nums2[j]) {
+                nums1[k--] = nums2[j--];
+            } else {
+                nums1[k--] = nums1[i--];
+            }
+        }
+        while(j >= 0) {
+            nums1[k--] = nums2[j--];
+        }
+    }
+};
+```
+
+leetcode 90 Subsets II
+
+题目描述：这道题目是78题的延伸，这道题可以有重复的元素。
+
+思路：延续78题的思路，在之前的集合中依次添加新的元素，构成新的集合。但是如果当前元素和之前的元素相同，那么只在上次新生成的集合中添加元素。
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> subsetsWithDup(vector<int>& nums) {
+        vector<vector<int>> v, last;
+        vector<int> a;
+        v.push_back(a);
+        sort(nums.begin(), nums.end());
+        int size = nums.size();
+        for(int i=0;i<size;++i) {
+            if(i >= 1 && nums[i] == nums[i-1]) {
+                for(int j=0;j<last.size();++j) {
+                    last[j].push_back(nums[i]);
+                    v.push_back(last[j]);
+                }
+            } else {
+                last.clear();
+                int ss = v.size();
+                for(int j=0;j<ss;++j) {
+                    vector<int> new_v = v[j];
+                    new_v.push_back(nums[i]);
+                    last.push_back(new_v);
+                    v.push_back(new_v);
+                }
+            }
+        }
+        return v;
+    }
+};
+```
+
+leetcode 91 
+
+题目描述：给定一个数字序列，可以把1~26分别解码为A~Z。求共有多少种解码的方式。
+
+思路：动归，但是写法很值得借鉴，开始写了很长很长，并且花了40分钟。
+
+```cpp
+class Solution {
+public:
+    int numDecodings(string s) {
+        if(s[0] == '0') return 0;
+        int size = s.size();
+        vector<int> v(size+1, 0);
+        v[0] = 1;
+        for(int i=1;i<=size;++i) {
+            v[i] = v[i-1];
+            if(s[i-1] == '0') v[i] = 0;
+            if(i>=2 && (s[i-2] == '1' || (s[i-2] == '2' && s[i-1] <='6'))) {
+                v[i] += v[i-2];
+            }
+        }
+        return v[size];
+    }
+};
+```
+
+leetcode 93 
+
+题目描述：给定一个不带.分隔的IP地址，使用.进行分隔，输出所有结果。
+
+思路：递归，依次取出字符串，判断是否合法。这道题主要记录使用stringstream把string转换为int的方法。
+
+```cpp
+class Solution {
+public:
+    vector<string> restoreIpAddresses(string s) {
+        vector<string> res;
+        dfs(res, 0, s, "");
+        return res;
+    }
+    
+    void dfs(vector<string> &res, int depth, string s, string cur) {
+        if(depth == 4 && s.size() == 0) {
+            res.push_back(cur);
+            return;
+        }
+        for(int i=0;i<s.size() && i<3;++i) {
+            if(isVaild(s.substr(0, i+1))) {
+                int remain = s.size()-i-1;
+                if(remain>=3-depth && remain<=(3-depth)*3){
+                    if(depth == 3) dfs(res, depth+1, s.substr(i+1), cur+s.substr(0, i+1));
+                    else dfs(res, depth+1, s.substr(i+1), cur+s.substr(0, i+1)+".");
+                }
+            }
+        }
+    }
+    
+    bool isVaild(string s) {
+        stringstream ss;
+        ss<<s;
+        int i;
+        ss>>i;
+        if(s[0] == '0' && s.size() > 1) return false;
+        if(i>=0 && i<=255) return true;
+        return false;
+    }
+};
+```
+
 leetcode 94 Binary Tree Inorder Traversal
 
-问题描述：中序遍历
+题目描述：中序遍历
 
 思路：递归
 
@@ -1400,7 +1816,7 @@ public:
 
 leetcode 96 Unique Binary Search Trees
 
-问题描述：给定n，求1~n的数字能够组成的BST的种数。
+题目描述：给定n，求1~n的数字能够组成的BST的种数。
 
 思路：动归，以k为根，那么左子树是1~k-1，右子树是k+1 ~n。那么num[k]=num[k-1]+num[n-k-1+1]。归纳公式如下：$$C_0=1 \ \  and \ \ C_{n+1}=\sum_{i=0}^nC_iC_{n-i}$$
 
@@ -1428,7 +1844,7 @@ public:
 
 leetcode 100 Same Tree
 
-问题描述：给定两棵树，判断是不是相等的两棵树。
+题目描述：给定两棵树，判断是不是相等的两棵树。
 
 思路：开始想按序遍历，后来发现需要在遍历的时候考虑null的问题。要不然不同的两棵树遍历的结果可能相同。例如：[1,1],[1,null,1]。可以同时遍历两棵树，只要结果不同就可以返回False了。
 
@@ -1461,7 +1877,7 @@ class Solution(object):
 
 leetcode 388 Longest Absolute File Path
 
-问题描述：给定一个表示路径的字符串，找到其中最长的文件路径。
+题目描述：给定一个表示路径的字符串，找到其中最长的文件路径。
 
 思路：开始看到文件路径的题目就想到了递归，但是想了很久没有想出来，参考了别人的代码。使用一个map记录每一个level的长度。例如最开始在第一层，那么就使用level=0的长度，代表到达这一层之前的长度。如果在这一层找到了文件，也就是包含.。那么就更新最长的长度。如果没有，那么就是文件夹，把当前的长度给level+1。比较简单的处理方法使用了istringstream可以简单处理掉\n。另外\t或者\n是一个字符长度。
 
@@ -1609,7 +2025,7 @@ public:
 
 **962. Maximum Width Ramp**
 
-问题描述：Given an array A of integers, a ramp is a tuple (i, j) for which i < j and A[i] <= A[j].  The width of such a ramp is j - i.
+题目描述：Given an array A of integers, a ramp is a tuple (i, j) for which i < j and A[i] <= A[j].  The width of such a ramp is j - i.
 
 Find the maximum width of a ramp in A.  If one doesn't exist, return 0.
 
