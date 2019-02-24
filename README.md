@@ -155,7 +155,7 @@ public:
 
 leetcode 131 Palindrome Partitioning
 
-题目描述：给定一个字符串，求出所有回文字串的划分。例如：输入"aab"，输出为[["aa","b"],["a","a","b"]]。
+题目描述：给定一个字符串，求出所有回文字串的划分。例如：输入"aab"，输出为[ ["aa","b"],["a","a","b"]]。
 
 思路：使用dfs进行递归搜索，每次添加一个字串，如果是回文串继续向后添加，否则不添加。添加进行递归结束之后要清除该串。
 
@@ -195,6 +195,74 @@ public:
 ```
 
 ## 二分查找
+在这里参考 [**grandyang**](http://www.cnblogs.com/grandyang/p/6854825.html)的总结。
+
+### 查找完全相同的数字
+这是最简单的一类，也是我们最开始学二分查找法需要解决的问题，比如我们有数组[2, 4, 5, 6, 9]，target = 6，那么我们可以写出二分查找法的代码如下：
+
+```cpp
+int find(vector<int> &nums, int target) {
+    int left = 0, right = nums.size()-1;
+    while(left <= right) {
+        int mid = left + (right - left) / 2;
+        if(nums[mid] == target) return mid;
+        if(nums[mid] < target) left = mid+1;
+        else right = mid;
+    }
+    return -1;
+}
+```
+注意二分查找法的写法并不唯一，主要可以变动地方有四处：
+
+* 第一处是right的初始化，可以写成 nums.size() 或者 nums.size() - 1
+
+* 第二处是left和right的关系，可以写成 left < right 或者 left <= right
+
+* 第三处是更新right的赋值，可以写成 right = mid 或者 right = mid - 1
+
+* 第四处是最后返回值，可以返回left，right，或right - 1
+
+但是这些不同的写法并不能随机的组合，若right初始化为了nums.size()，那么就必须用left < right，而最后的right的赋值必须用 right = mid。但是如果我们right初始化为 nums.size() - 1，那么就必须用 left <= right，并且right的赋值要写成 right = mid - 1，不然就会出错。所以建议是选择一套自己喜欢的写法，并且记住，实在不行就带简单的例子来一步一步执行，确定正确的写法也行。
+
+leetcode 349 Intersection of Two Arrays
+
+题目描述：给定两个数组求交集。
+
+思路：把两个数组分别排序，使用二分查找。
+
+```cpp
+class Solution {
+public:
+    vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {
+        vector<int> res;
+        vector<int> long_v = nums1.size() > nums2.size()? nums1: nums2;
+        vector<int> short_v = nums1.size() > nums2.size()? nums2: nums1;
+        sort(long_v.begin(), long_v.end());
+        sort(short_v.begin(), short_v.end());
+        for(int i=0;i<short_v.size();++i) {
+            if(find(long_v, short_v[i])) {
+                res.push_back(short_v[i]);
+            }
+            while(i< short_v.size()-1 && short_v[i] == short_v[i+1]) {
+                ++i;
+            }
+        }
+        return res;
+    }
+    
+    bool find(vector<int> &nums, int target) {
+        int left = 0, right = nums.size()-1;
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if(nums[mid] == target) return true;
+            if(nums[mid] < target) left = mid + 1;
+            else right = mid - 1;
+        }
+        return false;
+    }
+};
+```
+
 
 leetcode 33 Search in Rotated Sorted Array
 
@@ -259,6 +327,210 @@ public:
     }
 };
 ```
+
+leetcode 367 Valid Perfect Square
+
+题目描述：验证一个数字是否是平方数
+
+思路：二分查找，找到一个合适的数字。
+
+```cpp
+class Solution {
+public:
+    bool isPerfectSquare(int num) {
+        if(num <= 1) return true;
+        int left = 0, right = num;
+        while(left < right) {
+            int mid = left + (right - left)/2;
+            int cal = num / mid;
+            if(cal == mid && cal*mid == num) return true;
+            if(cal < mid) right = mid;
+            else left = mid + 1;
+        }
+        return false;
+    }
+};
+```
+
+### lower_bound
+查找第一个不小于目标值的数字(lower_bound)或者查找最后一个小于目标值的数字
+
+这是比较常见的一类，因为我们要查找的目标值不一定会在数组中出现，也有可能是跟目标值相等的数在数组中并不唯一，而是有多个，那么这种情况下nums[mid] == target这条判断语句就没有必要存在。比如在数组[2, 4, 5, 6, 9]中查找数字3，就会返回数字4的位置；在数组[0, 1, 1, 1, 1]中查找数字1，就会返回第一个数字1的位置。
+
+```cpp
+int find(vector<int>& nums, int target) {
+    int left = 0, right = nums.size();
+    while (left < right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] < target) left = mid + 1;
+        else right = mid;
+    }
+    return right;
+}
+```
+如果nums[mid] < target那么在右边查找，反之在左边查找。
+
+leetcode 475 Heaters
+
+题目描述：给定一个房屋序列，和一个暖气序列。求一个最小的半径，能够让每个房屋都被暖气覆盖到。
+
+```
+Input: [1,2,3,4],[1,4]
+Output: 1
+Explanation: The two heater was placed in the position 1 and 4. We need to use radius 1 standard, then all the houses can be warmed.
+```
+
+思路：对于每一个房屋找到前后的两个暖气，求出最小的半径，不断更新。对于找后面一个暖气，可以使用lower_bound来找。
+
+```cpp
+class Solution {
+public:
+    int findRadius(vector<int>& houses, vector<int>& heaters) {
+        int res = 0;
+        sort(houses.begin(), houses.end());
+        sort(heaters.begin(), heaters.end());
+        for(int i=0;i<houses.size();++i) {
+            int pos = find_lb(heaters, houses[i]);
+            if(pos == 0) {
+                res = max(heaters[0] - houses[i], res);
+            } else if(pos == heaters.size()) {
+                res = max(houses[i] - heaters[heaters.size()-1], res);
+            } else {
+                int dist = min(houses[i] - heaters[pos-1], heaters[pos] - houses[i]);
+                res = max(dist, res);
+            }
+        }
+        return res;
+    }
+    
+    int find_lb(vector<int> & v, int target) {
+        int left = 0, right = v.size();
+        while(left < right) {
+            int mid = left + (right - left) / 2;
+            if(v[mid] < target) left = mid+1;
+            else right = mid;
+        }
+        return right;
+    }
+};
+```
+
+leetcode 611 Valid Triangle Number
+
+题目描述：给定一个数组，找出能够组成三角形的数的对数。
+
+思路：固定前两个，使用lower_bound找到第三个。
+
+```cpp 
+class Solution {
+public:
+    int triangleNumber(vector<int>& nums) {
+        if(nums.size() < 3) return 0;
+        sort(nums.begin(), nums.end());
+        int first=0, second=1, third=2;
+        int res=0;
+        while(first < nums.size()-2) {
+            second = first+1;
+            while(second<nums.size()-1) {
+                auto p1 = lower_bound(nums.begin(), nums.end(), nums[first] + nums[second]);
+                res += max(int(p1-nums.begin()-second-1), 0);
+                second++;
+            }
+            first++;
+        }
+        return res;
+    }
+};
+```
+
+### upper_bound
+查找第一个大于目标值的数，可变形为查找最后一个不大于目标值的数
+
+```cpp
+int find(vector<int>& nums, int target) {
+    int left = 0, right = nums.size();
+    while (left < right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] <= target) left = mid + 1;
+        else right = mid;
+    }
+    return right;
+}
+```
+
+leetcode 441 Arranging Coins
+
+题目描述：给定n个硬币，求出能排列的直角三角形的边长。
+
+思路：upper_bound-1
+
+```cpp
+class Solution {
+public:
+    int arrangeCoins(int n) {
+        if(n<=1) return n;
+        long long int left = 1, right=n;
+        while(left<right) {
+            long long int mid = left + (right - left) / 2;
+            double s = mid*(1+mid) / 2;
+            if(s <= n) left = mid + 1;
+            else right = mid;
+        }
+        return right-1;
+    }
+};
+```
+
+leetcode 378 Kth Smallest Element in a Sorted Matrix
+
+题目描述：给定一个矩阵，每行和每列都是从小到大，找出第k小的数字。
+
+思路：
+1. 使用优先队列，这里主要记录cpp中优先队列的使用方法。如果建立小顶堆，把队列的第三项，换成less<int>即可。
+
+```cpp
+class Solution {
+public:
+    int kthSmallest(vector<vector<int>>& matrix, int k) {
+        priority_queue<int, vector<int>, greater<int> > q;
+        for(int i=0;i<matrix.size();++i) {
+            for(int j=0;j<matrix[i].size();++j) {
+                q.push(matrix[i][j]);
+            }
+        }
+        int res;
+        while(k>0) {
+            res = q.top();
+            q.pop();
+            k--;
+        }
+        return res;
+    }
+};
+```
+
+2. 使用upper_bound
+
+```cpp
+class Solution {
+public:
+    int kthSmallest(vector<vector<int>>& matrix, int k) {
+        int left = matrix[0][0], right = matrix.back().back();
+        while (left < right) {
+            int mid = left + (right - left) / 2, cnt = 0;
+            for (int i = 0; i < matrix.size(); ++i) {
+                cnt += upper_bound(matrix[i].begin(), matrix[i].end(), mid) - matrix[i].begin();
+            }
+            if (cnt < k) left = mid + 1;
+            else right = mid;
+        }
+        return left;
+    }
+};
+```
+
+
+
 
 ## 链表问题
 
@@ -386,6 +658,163 @@ public:
             }
         }
         return dummy_node->next;
+    }
+};
+```
+
+## 排列组合
+
+
+leetcode 46 Permutations
+
+题目描述：给定一个数组，求全排列，数组中的数字不重复。
+
+思路：
+1. 使用递归，用一个isVisited数组记录数字有没有被用过。
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> permute(vector<int>& nums) {
+        vector<bool> isVisited(nums.size(), false);
+        vector<vector<int>> res;
+        vector<int> cur;
+        dfs(res, isVisited, cur, nums);
+        return res;
+    }
+    
+    void dfs(vector<vector<int>> &res, vector<bool> &isVisited, vector<int> cur, vector<int>& nums) {
+        if(cur.size() == nums.size()) {
+            res.push_back(cur);
+            return;
+        }
+        for(int i=0;i<nums.size();++i) {
+            if(!isVisited[i]) {
+                cur.push_back(nums[i]);
+                isVisited[i] = true;
+                dfs(res, isVisited, cur, nums);
+                cur.pop_back();
+                isVisited[i] = false;
+            }
+        }
+    }
+};
+```
+
+2. 通过交换得到全排列。
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> permute(vector<int>& nums) {
+        vector<bool> isVisited(nums.size(), false);
+        vector<vector<int>> res;
+        vector<int> cur;
+        dfs(res, 0, nums);
+        return res;
+    }
+    
+    void dfs(vector<vector<int>> &res, int start, vector<int> &nums) {
+        if(start >= nums.size()) {
+            res.push_back(nums);
+            return;
+        }
+        for(int i=start; i<nums.size(); ++i) {
+            swap(nums[start], nums[i]);
+            dfs(res, start+1, nums);
+            swap(nums[start], nums[i]);
+        }
+    }
+    
+};
+```
+
+leetcode 47 Permutations II
+
+题目描述：给定一个数组，求全排列，数组中可能有重复的数字。
+
+思路：
+1. 同样的交换方法，使用set去重。
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> permuteUnique(vector<int>& nums) {
+        set<vector<int>> s;
+        dfs(s, 0, nums);
+        vector<vector<int>> res(s.begin(), s.end());
+        return res;
+    }
+    
+    void dfs(set<vector<int>> &res, int start, vector<int> &nums) {
+        if(start >= nums.size()) {
+            res.insert(nums);
+            return;
+        }
+        for(int i=start; i<nums.size(); ++i) {
+            if(i!=start && nums[i] == nums[start]) continue;
+            swap(nums[i], nums[start]);
+            dfs(res, start+1, nums);
+            swap(nums[i], nums[start]);
+        }
+    }
+};
+```
+
+2. 交换之后不交换回来，这样就防止出现相同的状态。
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> permuteUnique(vector<int>& nums) {
+        vector<vector<int>> s;
+        sort(nums.begin(), nums.end());
+        dfs(s, 0, nums);
+        return s;
+    }
+    
+    void dfs(vector<vector<int>> &res, int start, vector<int> nums) {
+        if(start >= nums.size()) {
+            res.push_back(nums);
+            return;
+        }
+        for(int i=start; i<nums.size(); ++i) {
+            if(i!=start && nums[i] == nums[start]) continue;
+            swap(nums[i], nums[start]);
+            dfs(res, start+1, nums);
+        }
+    }
+};
+
+```
+
+
+leetcode 77 Combinations
+
+题目描述：给定n和k，求1～n的所有k个数字的组合。
+
+思路：递归查找。
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> combine(int n, int k) {
+        vector<vector<int>> res;
+        vector<int> cur;
+        dfs(res, 1, n, k, cur);
+        return res;
+    }
+    
+    void dfs(vector<vector<int>> &res, int start, int n, int k, vector<int>& cur) {
+        if(cur.size() == k) {
+            res.push_back(cur);
+            return;
+        }
+        for(int i=start; i<n+1; ++i) {
+            cur.push_back(i);
+            if(cur.size() <= k) dfs(res, i+1, n, k, cur);
+            cur.pop_back();
+        }
     }
 };
 ```
@@ -1875,6 +2304,41 @@ class Solution(object):
         return self.dfs(root1.left, root2.left) and self.dfs(root1.right, root2.right)            
 ```
 
+leetcode 101 Symmetric Tree
+
+题目描述：给定一棵二叉树，判断是否对称。
+
+思路：递归比较，左边的左边和右边的右边比较，左边的右边和右边的左边比较。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool isSymmetric(TreeNode* root) {
+        return !root || dfs(root->left, root->right);
+    }
+    
+    bool dfs(TreeNode* left, TreeNode* right) {
+        if(left && right && left->val == right->val) {
+            return dfs(left->left, right->right) && dfs(left->right, right->left);
+        } else if(!left && !right) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+};
+```
+
 leetcode 388 Longest Absolute File Path
 
 题目描述：给定一个表示路径的字符串，找到其中最长的文件路径。
@@ -2219,5 +2683,59 @@ public:
 	X = x;
 	return rec(target) - 1;
     }
+};
+```
+
+contest 125 
+
+leetcode 1001 Grid Illumination
+
+题目描述：给定一个矩阵，每个各自可以被灯照亮。给定一个灯的vector，每个灯可以照亮横，纵，对角线。给定一个查询序列，查询一个点是否被灯照亮。每次查询后，关闭点周围9个格子的灯。
+
+思路：这道理开始暴力求解超时，看答案发现了关于矩阵对角线表示的巧妙方法。左上到右下的每一个对角线中x-y的值相同，右上到左下的对角线中，x+y的值相同。可以只把灯的序列遍历一次，求出每个格子被几个灯照亮。
+
+```cpp
+class Solution {
+public:
+    vector<int> gridIllumination(int N, vector<vector<int>>& lamps, vector<vector<int>>& queries) {
+        int L = lamps.size(), Q = queries.size();
+        map<pair<int, int>, int> point_freq;
+        map<int, int> x_freq, y_freq, sum_freq, diff_freq;
+
+        for (vector<int> lamp : lamps) {
+            int x = lamp[0], y = lamp[1];
+            point_freq[make_pair(x, y)]++;
+            x_freq[x]++;
+            y_freq[y]++;
+            sum_freq[x + y]++;
+            diff_freq[x - y]++;
+        }
+
+        vector<int> answers;
+
+        for (vector<int> query : queries) {
+            int x = query[0], y = query[1];
+            bool answer = x_freq[x] > 0 || y_freq[y] > 0 || sum_freq[x + y] > 0 || diff_freq[x - y] > 0;
+            answers.push_back(answer ? 1 : 0);
+
+            for (int dx = -1; dx <= +1; dx++)
+                for (int dy = -1; dy <= +1; dy++) {
+                    int nx = x + dx;
+                    int ny = y + dy;
+                    int freq = point_freq[make_pair(nx, ny)];
+
+                    if (freq > 0) {
+                        x_freq[nx] -= freq;
+                        y_freq[ny] -= freq;
+                        sum_freq[nx + ny] -= freq;
+                        diff_freq[nx - ny] -= freq;
+                        point_freq[make_pair(nx, ny)] -= freq;
+                    }
+                }
+        }
+
+        return answers;
+    }
+
 };
 ```
