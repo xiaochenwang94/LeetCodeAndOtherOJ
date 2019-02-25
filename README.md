@@ -57,6 +57,71 @@ def maxSubArray(self, nums):
     return max_e
 ```
 
+## 公共字串和公共子序列问题
+
+### 最长公共子序列
+子序列可以不用是相连的字符串。源字符串使用S表示，目标串使用T表示。这里分两种情况讨论，当S[i] = T[j]时，最长子序列的长度为dp[i][j] = dp[i-1][j-1]+1，也就是说比之前的最长公共子序列的长度多了1。当S[i]!=T[j]时，dp[i][j]=max(dp[i-1][j], dp[i][j-1])，也就是说当两个字符不等的时候，考虑少一个字符和另一个串的关系。初始化的时候，当两个字符串都是空的时候dp[0][0] = 0，当S为空的时候dp[i][0] = 0，当T为空的时候dp[0][j] = 0。此方法的时间复杂度是O(mn)，空间复杂度是O(mn)。
+
+代码如下：
+```cpp
+vector<vector<int>> dp(S.size()+1, vector<int>(T.size()+1, 0));
+for(int i=1;i<=S.size();++i) {
+    for(int j=1;j<=T.size();++j) {
+        if(S[i] == T[j]) dp[i][j] = dp[i-1][j-1] + 1;
+        else dp[i][j] = max(dp[i-1][j], dp[i][j-1]);
+    }
+}
+return dp[S.size()][T.size()];
+```
+
+如果要找出最长的公共子序列，从二维的dp矩阵逆向查找，当dp[i][j]>max(dp[i-1][j], dp[i][j-1])时，此时S[i]=T[j]，最长公共字串加入S[i]。反之向大的方向走。当两个方向相同的时候就是有多个解。
+
+代码如下：
+```cpp
+// 输出一个最长公共字串
+string find(vector<vector<int>> dp, string &S, string &T) {
+    int i=S.size(), j=T.size();
+    string lcs="";
+    while(i>0 && j>0) {
+        if(S[i-1] == T[j-1]) {
+            lcs=S[i-1]+lcs;
+            i--;
+            j--;
+        } else {
+            if(dp[i][j-1] > dp[i-1][j]) i--;
+            else j--;
+        }
+    }
+    return lcs;
+}
+```
+
+
+leetcode 115 Distinct Subsequences
+
+题目描述：给定s和t两个字符串，求出t在s中的种数。
+
+思路：当t是空串的时候，无论s是什么此时都是一种。当s是空串，无论t是什么种数都是0。当s[i-1]!=t[j-1]的时候，dp[i][j] = dp[i-1][j]，也就是说，最后一位不相等的时候和不考虑s最后一位是一样的。例如：s="rab"，t="ra"和s="ra"，t="ra"是一样的。当s[i-1] == t[i-1]的时候除了上述情况，还要把最后一位去掉，加上dp[i-1][j-1]的情况。
+
+```cpp
+class Solution {
+public:
+    int numDistinct(string s, string t) {
+        vector<vector<long long int>> dp(s.size()+1, vector<long long int>(t.size()+1, 0));
+        for(int i=0;i<s.size();++i) {
+            dp[i][0] = 1;
+        }
+        for(int i=1;i<=s.size();++i) {
+            for(int j=1;j<=t.size();++j) {
+                dp[i][j] = dp[i-1][j] + (s[i-1] == t[j-1] ? dp[i-1][j-1] : 0);
+            }
+        }
+        return dp[s.size()][t.size()];
+    }
+};
+```
+
+
 ## 回文串问题
 最长回文字串问题。回文串分为两种，奇数长度和偶数长度。例如：aba，abba。为了方便求解在字符串开始、结束、任意两个字符中间添加#号，变成#a#b#a#, #a#b#b#a#。这样做的好处是把奇数和偶数的回文串都转换成了奇数的回文串。暴力算法，根据每个点依次向两边展开，求出最长的回文字串。这种算法的时间复杂度是O(n*n)。字符串变换之后和变换之前的关系如下：(1)原始回文子串的长度等于转换之后的回文字串的半径-1。(2)在变换后的字符串开始添加$符号，变换后的字符串(位置-半径)/2是变换之前回文串开始的位置。
 
@@ -2336,6 +2401,623 @@ public:
         }
     }
     
+};
+```
+
+leetcode 102 Binary Tree Level Order Traversal
+
+题目描述：层序遍历一棵树
+
+思路：递归层序遍历。每次取出size个节点。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector<vector<int>> res;
+        if(!root) return res;
+        queue<TreeNode*> q;
+        q.push(root);
+        while(!q.empty()) {
+            int size = q.size();
+            vector<int> v;
+            for(int i=0;i<size;++i) {
+                TreeNode* p = q.front();
+                q.pop();
+                v.push_back(p->val);
+                if(p->left) q.push(p->left);
+                if(p->right) q.push(p->right);
+            }
+            res.push_back(v);
+        }
+        return res;
+    }
+};
+```
+
+leetcode 103 Binary Tree Zigzag Level Order 
+
+题目描述：z形遍历二叉树。
+
+思路：使用栈存储node序列，注意每一层的添加顺序不同。
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> zigzagLevelOrder(TreeNode* root) {
+        vector<vector<int>> res;
+        if(!root) return res;
+        queue<vector<TreeNode*>> q;
+        vector<TreeNode*> s;
+        s.push_back(root);
+        q.push(s);
+        bool flag = true;
+        while(!q.empty()) {
+            s.clear();
+            vector<int> v;
+            vector<TreeNode*> t = q.front();
+            q.pop();
+            while(t.size() != 0) {
+                TreeNode *tn = t.back();
+                t.pop_back();
+                v.push_back(tn->val);
+                if(flag) {
+                    if(tn->left) s.push_back(tn->left);
+                    if(tn->right) s.push_back(tn->right);
+                } else {
+                    if(tn->right) s.push_back(tn->right);
+                    if(tn->left) s.push_back(tn->left);
+                }
+            }
+            flag = !flag;
+            if(s.size() > 0) q.push(s);
+            if(v.size() > 0) res.push_back(v);
+        }
+        return res;
+    }
+};
+```
+
+leetcode 104 Maximum Depth of Binary Tree
+
+题目描述：返回树的深度
+
+思路：递归查找，返回左右大的一个
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    int maxDepth(TreeNode* root) {
+        if(!root) return 0;
+        return max(maxDepth(root->left)+1, maxDepth(root->right)+1);
+    }
+};
+```
+
+leetcode 105 Construct Binary Tree from Preorder and Inorder Traversal
+
+题目描述：给定前序遍历和中序遍历的结果，重构树。
+
+思路：依次扫描前序结果，每次把中序遍历的结果分成两部分。前一部分是新的左子树，后一部分是新的右子树。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+        TreeNode *root=NULL;
+        int cur=0;
+        dfs(root, preorder, inorder, 0, preorder.size(), cur);
+        return root;
+    }
+    
+    void dfs(TreeNode* &root, vector<int>& preorder, vector<int>& inorder, int start, int end, int &cur) {
+        if(start>=end) return;
+        root = new TreeNode(preorder[cur]);
+        int in_idx = 0;
+        for(int i=start;i<end;++i) {
+            if(inorder[i] == preorder[cur]) {
+                in_idx = i;
+                break;
+            }
+        }
+        cur++;
+        dfs(root->left, preorder, inorder, start, in_idx, cur);
+        dfs(root->right, preorder, inorder, in_idx+1, end, cur);
+    }
+};
+```
+
+leetcode 107 Binary Tree Level Order Traversal II
+
+题目描述：倒着的层序遍历
+
+思路：递归，遍历完后面再添加前面。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    vector<vector<int>> levelOrderBottom(TreeNode* root) {
+        vector<vector<int>> res;
+        if(!root) return res;
+        queue<TreeNode*> q;
+        q.push(root);
+        dfs(res, q);
+        return res;
+    }
+    
+    void dfs(vector<vector<int>> &res, queue<TreeNode*> q) {
+        queue<TreeNode*> new_q;
+        if(q.size() == 0) return;
+        vector<int> v;
+        while(!q.empty()) {
+            TreeNode *t = q.front();
+            q.pop();
+            v.push_back(t->val);
+            if(t->left) new_q.push(t->left);
+            if(t->right) new_q.push(t->right);
+        }
+        dfs(res, new_q);
+        res.push_back(v);
+    }
+};
+```
+
+leetcode 108 Convert Sorted Array to Binary Search Tree
+
+题目描述：给定一个有序的数组，构建一棵二叉搜索树，且树要平衡，任意两棵子树的深度差不能超过1
+
+思路：每次取中间的数字，那么左右就平衡了
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* sortedArrayToBST(vector<int>& nums) {
+        TreeNode* root = buildTree(nums, 0, nums.size());
+        return root;
+    }
+    
+    TreeNode* buildTree(vector<int>& nums, int left, int right) {
+        if(left >= right) return NULL;
+        int mid = left+(right-left) /2;
+        TreeNode* root = new TreeNode(nums[mid]);
+        root->left = buildTree(nums, left, mid);
+        root->right = buildTree(nums, mid+1, right);
+        return root;
+    }
+};
+```
+
+leetcode 109 Convert Sorted List to Binary Search Tree
+
+题目描述：给定一个有序链表，将其转换为平衡的二叉搜索树。
+
+思路：
+1. 和数组相同，但是每次要遍历找到中间的节点。
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* sortedListToBST(ListNode* head) {
+        int size = 0;
+        ListNode* p = head;
+        while(p) {
+            size++;
+            p = p->next;
+        }
+        TreeNode* root = buildTree(head, 0, size);
+        return root;
+    }
+    
+    TreeNode* buildTree(ListNode* head, int left, int right) {
+        if(left>=right) return NULL;
+        int mid = left + (right - left) / 2;
+        ListNode* p = head;
+        for(int i=0;i<mid;++i) {
+            p = p->next;
+        }
+        TreeNode* root = new TreeNode(p->val);
+        root->left = buildTree(head, left, mid);
+        root->right = buildTree(head, mid+1, right);
+        return root;
+    }
+};
+```
+
+2. 利用BST的性质，BST中序遍历的结果就是一个有序的数组。在每个递归中，先构建左子树，再构建右子树。这样可以不用每次遍历找mid。时间复杂度是O(N)
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* sortedListToBST(ListNode* head) {
+        int size = 0;
+        ListNode* p = head;
+        while(p) {
+            size++;
+            p = p->next;
+        }
+        TreeNode* root = buildTree(head, 0, size);
+        return root;
+    }
+    
+    TreeNode* buildTree(ListNode* &head, int left, int right) {
+        if(left>=right) return NULL;
+        int mid = left + (right - left)/2;
+        TreeNode* root = new TreeNode(-1);
+        root->left = buildTree(head, left, mid);
+        root->val = head->val;
+        head = head->next;
+        root->right = buildTree(head, mid+1, right);
+        return root;
+    }
+};
+```
+
+leetcode 110 Balanced Binary Tree
+
+题目描述：给定一棵树，返回树是否平衡，左子树和右子树的深度差1以内都是平衡的。
+
+思路：虽然是道easy的题目，卡了很久。最后直接每一层判断一次。每个节点都根据当前的结果和下面的结果来判断是否平衡。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool isBalanced(TreeNode* root) {
+        int d = 0;
+        return depth(root, d);
+    }
+    
+    bool depth(TreeNode* root, int &d) {
+        if(!root) {d=0;return true;}
+        int l, r;
+        bool isl = depth(root->left, l); 
+        bool isr = depth(root->right, r);
+        d = max(l, r)+1;
+        if(abs(l-r)<=1) return isl && isr;
+        return false;
+    }
+};
+```
+
+leetcode 111 Minimum Depth of Binary Tree
+
+题目描述：返回树从根到叶子的最小长度。
+
+思路：如果是叶子节点直接返回1，如果左右只有一个，返回左右的长度，如果都有，返回短的。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    int minDepth(TreeNode* root) {
+        if(!root) return 0;
+        if(root->left && root->right) return min(minDepth(root->left)+1, minDepth(root->right)+1);
+        if(root->left) return minDepth(root->left)+1;
+        if(root->right) return minDepth(root->right)+1;
+        return 1;
+    }
+};
+```
+
+leetcode 112 Path Sum
+
+题目描述：给定一棵树，给定一个和，能否找到一条路径得到这个和。
+
+思路：dfs查找。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool hasPathSum(TreeNode* root, int sum) {
+        return dfs(root, 0, sum);
+    }
+    
+    bool dfs(TreeNode* root, int cur, int sum) {
+        if(!root) return false;
+        cur += root->val;
+        if(!root->left && !root->right) return cur == sum;
+        return dfs(root->left, cur, sum) || dfs(root->right, cur, sum);
+    }
+};
+```
+
+leetcode 113 Path Sum II
+
+题目描述：给定一棵树，求出所有等于某个和的路径。
+
+思路：dfs遍历。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    vector<vector<int>> pathSum(TreeNode* root, int sum) {
+        vector<vector<int>> res;
+        vector<int> vcur;
+        dfs(res, root, 0, sum, vcur);
+        return res;
+    }
+    
+    void dfs(vector<vector<int>> &res, TreeNode* root, int cur, int sum, vector<int> vcur) {
+        if(!root) return;
+        cur += root->val;
+        vcur.push_back(root->val);
+        if(!root->left && !root->right && cur == sum) res.push_back(vcur);
+        dfs(res, root->left, cur, sum, vcur);
+        dfs(res, root->right, cur, sum, vcur);
+    }
+};
+```
+
+leetcode 116 Populating Next Right Pointers in Each Node
+
+题目描述：给定一棵二叉树，把每个node和它右边的链接起来
+
+思路：层序遍历然后链接。
+
+```cpp
+/*
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    Node* left;
+    Node* right;
+    Node* next;
+
+    Node() {}
+
+    Node(int _val, Node* _left, Node* _right, Node* _next) {
+        val = _val;
+        left = _left;
+        right = _right;
+        next = _next;
+    }
+};
+*/
+class Solution {
+public:
+    Node* connect(Node* root) {
+        if(!root) return root;
+        queue<Node*> q;
+        q.push(root);
+        while(!q.empty()) {
+            Node* old = NULL;
+            int size = q.size();
+            for(int i=0;i<size;++i) {
+                Node *t = q.front();
+                q.pop();
+                if(t->left) q.push(t->left);
+                if(t->right) q.push(t->right);
+                if(old) old->next = t;
+                old = t;
+            }
+        }
+        return root;
+    }
+};
+```
+
+但是题目要求使用O(1)的额外空间，因此不能使用队列
+
+```cpp
+/*
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    Node* left;
+    Node* right;
+    Node* next;
+
+    Node() {}
+
+    Node(int _val, Node* _left, Node* _right, Node* _next) {
+        val = _val;
+        left = _left;
+        right = _right;
+        next = _next;
+    }
+};
+*/
+class Solution {
+public:
+    Node* connect(Node* root) {
+        if(!root) return root;
+        Node *start = root, *cur=NULL;
+        while(start->left) {
+            cur = start;
+            while(cur) {
+                cur->left->next = cur->right;
+                if(cur->next) cur->right->next = cur->next->left;
+                cur = cur->next;
+            }
+            start = start->left;
+        }
+        return root;
+    }
+};
+```
+
+leetcode 117 Populating Next Right Pointers in Each Node II
+
+题目描述：和116相同，但是不是完全二叉树
+
+思路：难道是不难，就是要把所有情况考虑到，完全练习逻辑和代码熟练度。
+
+```cpp
+/*
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    Node* left;
+    Node* right;
+    Node* next;
+
+    Node() {}
+
+    Node(int _val, Node* _left, Node* _right, Node* _next) {
+        val = _val;
+        left = _left;
+        right = _right;
+        next = _next;
+    }
+};
+*/
+class Solution {
+public:
+    Node* connect(Node* root) {
+        if(!root) return root;
+        Node *start=root, *cur=NULL;
+        while(start) {
+            cur = start;
+            start = NULL;
+            while(cur) {
+                if(cur->left) {
+                    if(cur->right) cur->left->next = cur->right;
+                    else if(!cur->next) {
+                        cur->left->next = NULL;
+                    } else {
+                        Node* next = cur->next;
+                        while(next && !next->left && !next->right) next = next->next;
+                        if(next) {
+                            if(next->left) cur->left->next = next->left;
+                            else if(next->right) cur->left->next = next->right;
+                        }
+                    }
+                    if(!start) start = cur->left;
+                } 
+                if(cur->right) {
+                    if(!cur->next) {
+                        cur->right->next = NULL;
+                    } else {
+                        Node *next = cur->next;
+                        while(next && !next->left && !next->right) next = next->next;
+                        if(next) {
+                            if(next->left) cur->right->next = next->left;
+                            else cur->right->next = next->right;
+                        }
+                    }
+                    if(!start) start = cur->right;
+                }
+                cur = cur->next;
+            }
+        }
+        return root;
+    }
 };
 ```
 
