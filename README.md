@@ -121,6 +121,136 @@ public:
 };
 ```
 
+## 公共祖先问题
+
+### 链表公共节点
+两个单向链表，可能从某个点之后重合在一起，求出第一个重合的点。
+
+leetcode 160 Intersection of Two Linked Lists
+
+题目描述：给定两个链表，如果两个链表有重合，求出重合的第一个节点。
+
+思路：
+1. 两个链表一长一短，长的比短的长size，那么长的先走size，然后两个一起走，第一个相同的就是结果。
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
+        int size1=get_size(headA), size2=get_size(headB);
+        if(size1 > size2) {
+            int diff = size1 - size2;
+            for(int i=0;i<diff;++i) headA = headA->next;
+        } else {
+            int diff = size2 - size1;
+            for(int i=0;i<diff;++i) headB = headB->next;
+        }
+        while(headA && headB) {
+                if(headA == headB) return headA;
+                headA = headA->next;
+                headB = headB->next;
+            }
+        return NULL;
+    }
+    
+    int get_size(ListNode* node) {
+        int size = 0;
+        while(node) {
+            size++;
+            node = node->next;
+        }
+        return size;
+    }
+};
+```
+
+2. 同时走A和B，走完一个接到另一个上面，这样重合前的部分分别走了一次，长度就一样了。
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
+        ListNode *a=headA, *b=headB;
+        while(a!=b) {
+            a = a?a->next:headB;
+            b = b?b->next:headA;
+        }
+        return a;
+    }
+};
+```
+
+
+### 树的公共祖先
+leetcode 235 Lowest Common Ancestor of a Binary Search Tree
+
+题目描述：给定一个BST和其中的两个节点，求最近的公共祖先。
+
+思路：由于是BST，如果root的val大于两个节点，向左找，如果root的val小于两个节点向右找。否则就是最近的公共节点。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        if(root->val > p->val && root->val > q->val) return lowestCommonAncestor(root->left, p, q);
+        if(root->val < p->val && root->val < q->val) return lowestCommonAncestor(root->right, p ,q);
+        return root;
+    }
+};
+```
+
+leetcode 236  Lowest Common Ancestor of a Binary Tree
+
+题目描述：给定一个二叉树和两个节点，找公共祖先。
+
+思路：递归查找两个节点，找到就返回。当前节点为node，如果两个点在node左边，那么查询右节点的结果为null，如果都在右边查询左节点的结果为null。如果一左一右，那么两个都不是null，这时返回root，否则返回不为空的那个。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        if(!root || p == root || q == root) return root;
+        TreeNode *left = lowestCommonAncestor(root->left, p, q);
+        TreeNode *right = lowestCommonAncestor(root->right, p, q);
+        if(left && right) return root;
+        return left?left:right;
+    }
+};
+```
 
 ## 回文串问题
 最长回文字串问题。回文串分为两种，奇数长度和偶数长度。例如：aba，abba。为了方便求解在字符串开始、结束、任意两个字符中间添加#号，变成#a#b#a#, #a#b#b#a#。这样做的好处是把奇数和偶数的回文串都转换成了奇数的回文串。暴力算法，根据每个点依次向两边展开，求出最长的回文字串。这种算法的时间复杂度是O(n*n)。字符串变换之后和变换之前的关系如下：(1)原始回文子串的长度等于转换之后的回文字串的半径-1。(2)在变换后的字符串开始添加$符号，变换后的字符串(位置-半径)/2是变换之前回文串开始的位置。
@@ -136,7 +266,7 @@ public:
 ![](https://img2018.cnblogs.com/blog/391947/201809/391947-20180916233809298-960515229.png)
 
 综上可以归结为下面一行代码
-```c++
+```cpp
 p[i] = mx>i?min(p[j], mx-i):1
 ```
 
@@ -146,7 +276,7 @@ leetcode 5 Longest Palindromic Substring
 
 思路：上文的马拉车算法。
 
-```c++
+```cpp
 class Solution {
 public:
     string longestPalindrome(string s) {
@@ -178,7 +308,7 @@ leetcode 9 Palindrome Number
 
 题目描述：给定一个数字判断是否为回文数字，121是回文数字，但是-121不是。这道题目要求不能转换为字符串。
 
-```c++
+```cpp
 class Solution {
 public:
     bool isPalindrome(int x) {
@@ -197,7 +327,7 @@ leetcode 125 Valid Palindrome
 
 题目描述：给定一个字符串，判断是否为回文串，不考虑空格，标点符号。例如"A man, a plan, a canal: Panama"就是一个回文串。
 
-```c++
+```cpp
 class Solution {
 public:
     bool isPalindrome(string s) {
@@ -224,7 +354,7 @@ leetcode 131 Palindrome Partitioning
 
 思路：使用dfs进行递归搜索，每次添加一个字串，如果是回文串继续向后添加，否则不添加。添加进行递归结束之后要清除该串。
 
-```c++
+```cpp
 class Solution {
 public:
     vector<vector<string>> partition(string s) {
@@ -594,7 +724,41 @@ public:
 };
 ```
 
+### 其他
+leetcode 162 Find Peak Element
 
+题目描述：给定一个序列，找到一个峰值的位置。要求复杂度为O(logn)
+
+思路：如果没有复杂度要求，直接顺序查找一次就行，找到一个大于左右两边的就返回。要求复杂度为O(logn)，肯定要使用二分查找。当前数字为mid，那么比较mid-1和mid+1的数字，只向大的一遍查找即可。因为大的一边至少会存在一个peak。
+
+```cpp
+class Solution {
+public:
+    int findPeakElement(vector<int>& nums) {
+        if(nums.size() == 1) return 0;
+        int left=0, right=nums.size();
+        while(left<right) {
+            int mid = left+(right-left)/2;
+            if(mid == 0) {
+                if(nums[0] > nums[1]) return 0;
+                else left=1;
+            } else if(mid == nums.size()-1) {
+                if(nums[nums.size()-1] > nums[nums.size()-2]) return nums.size()-1;
+                else right=nums.size()-1;
+            } else {
+              if(nums[mid] < nums[mid-1]) {
+                  right = mid;
+              } else if(nums[mid] < nums[mid+1]) {
+                  left = mid+1;
+              } else {
+                  return mid;
+              }
+            }
+        }
+        return 0;
+    }
+};
+```
 
 
 ## 链表问题
@@ -894,7 +1058,7 @@ leetcode 4 Median of Two Sorted Arrays
 
 一个tick，中位数等于第n+1/2和第n+2/2个数的平均数。对于基数和偶数同样适用。
 
-```c++
+```cpp
 class Solution {
 public:
     double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
@@ -935,7 +1099,7 @@ leetcode 10 Regular Expression Matching
 
 - 返回调用递归函数匹配s和去掉前两个字符的p的结果（这么做的原因是处理星号无法匹配的内容，比如s="ab", p="a*b"，直接进入while循环后，我们发现"ab"和"b"不匹配，所以s变成"b"，那么此时跳出循环后，就到最后的return来比较"b"和"b"了，返回true。再举个例子，比如s="", p="a*"，由于s为空，不会进入任何的if和while，只能到最后的return来比较了，返回true，正确）。
 
-```c++
+```cpp
 class Solution {
 public:
     bool isMatch(string s, string p) {
@@ -1398,7 +1562,7 @@ leetcode 48 Rotate Image
 
 思路：可以按照规律推出每个点的位置，有些复杂。简单的做法是，先做转置，之后再沿着y轴翻转。延伸一下，如果是逆时针旋转90度，转置之后沿着x轴翻转即可。旋转180度，转置之后沿着x=y翻转。
 
-```c++
+```cpp
 class Solution {
 public:
     void rotate(vector<vector<int>>& matrix) {
@@ -3021,13 +3185,455 @@ public:
 };
 ```
 
+leetcode 119 Pascal's Triangle II
+
+题目描述：输出杨辉三角第n行，n从0开始
+
+思路：一行行输出，O(k)的复杂度。
+
+```cpp
+class Solution {
+public:
+    vector<int> getRow(int rowIndex) {
+        vector<int> v(rowIndex+1, 1);
+        for(int i=1;i<=rowIndex;++i) {
+            int old=0;
+            for(int j=0;j<=i;++j) {
+                int t = v[j];
+                if(j==0 || j==i) v[j]=1;
+                else v[j] = old + v[j];
+                old = t;
+            }
+        }
+        return v;
+    }
+};
+```
+
+leetcode 120 Triangle
+
+题目描述：给定一个三角矩阵，求出从上到下最小的加和。
+
+思路：开始使用了dfs，发现超时，因为有2^n条路径，而且存在负数不能够根据当前的加和进行剪枝。后来参考别人的思路使用dp，很容易解决。
+
+```cpp
+class Solution {
+public:
+    int minimumTotal(vector<vector<int>>& triangle) {
+        vector<int> dp(triangle[triangle.size()-1].size(), 0);
+        dp[0]=triangle[0][0];
+        for(int i=1;i<triangle.size();++i) {
+            for(int j=i;j>=0;--j) {
+                if(j == 0) dp[j] = triangle[i][j] + dp[j];
+                else if(j == i) dp[j] = triangle[i][j] + dp[j-1];
+                else dp[j] = triangle[i][j] + min(dp[j], dp[j-1]);
+            }
+        }
+        int res = INT_MAX;
+        for(int i=0;i<dp.size();++i) {
+            if(res > dp[i]) res = dp[i];
+        }
+        return res;
+    }
+};
+```
+
+leetcode 132 Palindrome Partitioning II
+
+题目描述：给定一个字符串，求出最少需要多少次切割，才能使得每一部分都是一个回文串。
+
+思路：求数量而不是求出每一个是什么的，一般使用dp。考虑从第i个字符后面切割的情况，如果切割后这个字符不能和前面的任何字符串构成回文串，那么相当于要多切一刀，也就是在i-1的情况下面加1。如果能够和第j到i之间的字符构成回文串，那么就是在j-1的情况下加1。
+
+```cpp
+class Solution {
+public:
+    int minCut(string s) {
+        if(s.size() == 0) return 0;
+        vector<int> dp(s.size()+1, -1);
+        for(int i=1;i<=s.size();++i) {
+            string ss = s.substr(0, i);
+            for(int j=i-1;j>=0;--j) {
+                if(ispart(ss.substr(j))) {
+                    if(dp[i] == -1) dp[i] = dp[j] + 1;
+                    else if(dp[j]+1 < dp[i]) dp[i] = dp[j]+1;
+                }
+            }
+        }
+        return dp[s.size()];
+    }
+    
+    bool ispart(string s) {
+        int i=0, j=s.size()-1;
+        while(i<=j) {
+            if(s[i++] != s[j--]) return false;
+        }
+        return true;
+    }
+};
+```
+
+leetcode 136 Single Number
+
+题目描述：一个数组中除了一个数字以外，其他的数字都出现2次。找出这个数字。
+
+思路：异或。
+
+```cpp
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        int res = nums[0];
+        for(int i=1;i<nums.size();++i) {
+            res^=nums[i];
+        }
+        return res;
+    }
+};
+```
+
+leetcode 137 Single Number II
+
+题目描述：给定一个数组，除了一个数字出现一次，其他的数字都出现3次，找出这个数字。
+
+思路：因为出现了3次所以不能直接用异或。
+1. 找出每个位上1的个数模3，得到这一位的值。
+
+```cpp
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        int res = 0;
+        for(int i=0;i<32;++i) {
+            int sum=0;
+            for(auto x : nums) {
+                sum += x>>i & 1;
+            }
+            res |= (sum%3)<<i;
+        }
+        return res;
+    }
+};
+```
+
+leetcode 138 Copy List with Random Pointer
+
+题目描述：对带有random pointer的链表做深度复制。
+
+思路：开始以为顺着next复制就行了，后来发现这样random pointer还是指向了原来的节点，没有指向新的。使用map记录新的node和旧的node的对应关系，再遍历一次得到random pointer的指向。
+
+```cpp
+/*
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    Node* next;
+    Node* random;
+
+    Node() {}
+
+    Node(int _val, Node* _next, Node* _random) {
+        val = _val;
+        next = _next;
+        random = _random;
+    }
+};
+*/
+class Solution {
+public:
+    Node* copyRandomList(Node* head) {
+        if(!head) return NULL;
+        map<Node*, Node*> m;
+        Node *root = new Node(-1, NULL, NULL);
+        Node *p = root, *q = head;
+        while(q) {
+            Node* t = new Node(q->val, NULL, q->random);
+            m[q] = t;
+            p->next = t;
+            p = t;
+            q = q->next;
+        }
+        p = root->next;
+        q = head;
+        while(q) {
+            p->random = m[q->random];
+            p = p->next;
+            q = q->next;
+        }
+        return root->next;
+    }
+};
+```
+
+leetcode 149 Max Points on a Line
+
+题目描述：给定二维平面上的一些点，找出共线最多的点的数量。
+
+思路：共线的点有两种情况，第一，重合的点，重合的点不用计算斜率，使用一个dup变量记录，在每个斜率上都要加上。第二，不重合，不重合的点使用一个map记录斜率，同样斜率的点在一条直线上。但是计算斜率用到除法，一方面耗时，另一方面，不准确。因此使用一个pair记录除数和被除数，但是要让他们除以gcd。
+
+```cpp
+/**
+ * Definition for a point.
+ * struct Point {
+ *     int x;
+ *     int y;
+ *     Point() : x(0), y(0) {}
+ *     Point(int a, int b) : x(a), y(b) {}
+ * };
+ */
+class Solution {
+public:
+    int maxPoints(vector<Point>& points) {
+        map<pair<int, int>, int> m;
+        int dup = 0, res=0;
+        for(int i=0;i<points.size();++i) {
+            dup=0;
+            for(int j=i;j<points.size();++j) {
+                // cout<<i<<" "<<j<<endl;
+                if(points[i].x == points[j].x && points[i].y == points[j].y) {
+                    dup++; continue;
+                }
+                int dx = points[i].x - points[j].x;
+                int dy = points[i].y - points[j].y;
+                int d = gcd(dx, dy);
+                m[{dx/d, dy/d}]++;
+            }
+            for(auto iter=m.begin();iter!=m.end();++iter) {
+                res = max(iter->second+dup, res);
+                iter->second=0;
+            }
+            res = max(res, dup);
+        }
+        return res;
+    }
+    
+    int gcd(int a, int b) {
+        return b == 0 ? a : gcd(b, a%b);
+    }
+};
+```
+
+leetcode 150 Evaluate Reverse Polish Notation
+
+题目描述：计算后缀表达式
+
+思路：不断压栈弹栈即可，注意两个运算数字，前面的后弹出。
+
+```cpp
+class Solution {
+public:
+    int evalRPN(vector<string>& tokens) {
+        stack<int> s;
+        for(int i=0;i < tokens.size(); ++i) {
+            if(tokens[i].size() == 1 && (tokens[i][0] == '+' || tokens[i][0] == '-' || tokens[i][0] == '*' || tokens[i][0] == '/')) {
+                int second = s.top();
+                s.pop();
+                int first = s.top();
+                s.pop();
+                switch(tokens[i][0]) {
+                    case '+':
+                        s.push(first+second);
+                        break;
+                    case '-':
+                        s.push(first-second);
+                        break;
+                    case '*':
+                        s.push(first * second);
+                        break;
+                    case '/':
+                        s.push(first / second);
+                        break;
+                }
+            } else {
+                stringstream ss;
+                ss << tokens[i];
+                int num;
+                ss >> num;
+                s.push(num);
+            }
+        }
+        int res = s.top();
+        return res;
+    }
+};
+```
+
+leetcode 152 Maximum Product Subarray
+
+题目描述：给定一个序列，求出乘积最大的子序列。
+
+思路：
+
+1. 开始想到了动归，使用dp[i][j]表示i到j的最大的乘积，但是怎么也想不出递推公式。后来使用dp[i][j]表示i到j的乘积。通过观察可以看出来，dp[i][j]是沿着对角线填充的，而且每次只需要上一个对角线的内容，可以得到递推公式dp[i][j]=dp[i][j-1]*nums[j]。开始使用二维的dp[i][j]，超内存了。因此减少为一维dp，在左上到右下的对角线中同一个对角线i+j的值不同。因此可以使用dp[i+j]表示dp[i][j]。dp[i+j] = dp[i+j-1] * nums[j]。这样的时间复杂度是O(n^2)，空间复杂度是O(n)。
+
+```cpp
+class Solution {
+public:
+    int maxProduct(vector<int>& nums) {
+        vector<int> dp(nums.size()*2, 0);
+        int res = nums[0];
+        for(int i=0;i < nums.size();++i) {
+            dp[i+i] = nums[i];
+            res = max(res, nums[i]);
+        }
+        int step = 1;
+        while(step < nums.size()) {
+            int i=0, j=i+step;
+            while(j < nums.size()) {
+                dp[i+j] = dp[i+j-1] * nums[j];
+                res = max(dp[i+j], res);
+                i++;j++;
+            }
+            step++;
+        }
+        return res;
+    }
+};
+```
+
+2. 查看了别人的思路，使用两个数组记录中间结果，一个记录最大值f一个记录最小值g。最大值一定是从f[i-1]*nums[i], g[i-1]\*nums[i], nums[i]中产生的。最小值也在其中，不断更新res即可。
+
+```cpp
+class Solution {
+public:
+    int maxProduct(vector<int>& nums) {
+        int res = 0;
+        if(nums.size() == 0) return res;
+        res = nums[0];
+        vector<int> f(nums.size(), 0), g(nums.size(), 0);
+        f[0] = g[0] = nums[0];
+        for(int i=1; i < nums.size(); ++i) {
+            int max_n = f[i-1] * nums[i];
+            int min_n = g[i-1] * nums[i];
+            f[i] = max(max_n, max(min_n, nums[i]));
+            g[i] = min(max_n, min(min_n, nums[i]));
+            res = max(res, f[i]);
+        }
+        return res;
+    }
+};
+```
+
+进一步优化空间
+
+```cpp
+class Solution {
+public:
+    int maxProduct(vector<int>& nums) {
+        int res = 0;
+        if(nums.size() == 0) return res;
+        res = nums[0];
+        int max_n=nums[0], min_n=nums[0];
+        for(int i=1;i < nums.size();++i) {
+            int mx = max_n * nums[i];
+            int mn = min_n * nums[i];
+            max_n = max(mx, max(mn, nums[i]));
+            min_n = min(mx, min(mn, nums[i]));
+            res = max(res, max_n);
+        }
+        return res;
+    }
+};
+```
+
+
+leetcode 155 Min Stack
+
+题目描述：实现一个可以O(1)，push,pop,top,查询最小值的栈。
+
+思路：使用两个stack实现，一个按序存储，另一个存储出现过的最小值。
+
+```cpp
+class MinStack {
+public:
+    /** initialize your data structure here. */
+    MinStack() {
+
+    }
+    
+    void push(int x) {
+        s1.push(x);
+        if(s2.empty() || x <= s2.top()) s2.push(x);
+    }
+    
+    void pop() {
+        int t = s1.top();
+        s1.pop();
+        if(t == s2.top()) s2.pop();
+    }
+    
+    int top() {
+        return s1.top();
+    }
+    
+    int getMin() {
+        return s2.top();
+    }
+    
+private:
+    stack<int> s1, s2;   
+};
+
+/**
+ * Your MinStack object will be instantiated and called as such:
+ * MinStack obj = new MinStack();
+ * obj.push(x);
+ * obj.pop();
+ * int param_3 = obj.top();
+ * int param_4 = obj.getMin();
+ */
+```
+
+leetcode 172 Factorial Trailing Zeroes
+
+题目描述：给定n，求n！尾部0的个数
+
+思路：这道题就是找有多少个5，因为2*5=10，2的数量比5多，因此找5。遇到10的情况，也是找5，一个10包含一个5。
+
+```cpp
+class Solution {
+public:
+    int trailingZeroes(int n) {
+        int res = 0;
+        while(n) {
+            res+=n/5;
+            n/=5;
+        }
+        return res;
+    }
+};
+```
+
+leetcode 179 Largest Number
+
+题目描述：给定一个数组，使用其拼成一个字符串，表示一个数字。求出最大的数字。
+
+思路：参考了大神的思路，相邻的两个数字如果ab大于ba就不用交换，反之要交换。这样排序之后就可以得到醉倒的数字。
+
+```cpp
+class Solution {
+public:
+    string largestNumber(vector<int>& nums) {
+        string res;
+        sort(nums.begin(), nums.end(), [](int a, int b) {
+           return to_string(a) + to_string(b) > to_string(b) + to_string(a); 
+        });
+        for (int i = 0; i < nums.size(); ++i) {
+            cout<<nums[i]<<endl;
+            res += to_string(nums[i]);
+        }
+        return res[0] == '0' ? "0" : res;
+    }
+};
+```
+
 leetcode 388 Longest Absolute File Path
 
 题目描述：给定一个表示路径的字符串，找到其中最长的文件路径。
 
 思路：开始看到文件路径的题目就想到了递归，但是想了很久没有想出来，参考了别人的代码。使用一个map记录每一个level的长度。例如最开始在第一层，那么就使用level=0的长度，代表到达这一层之前的长度。如果在这一层找到了文件，也就是包含.。那么就更新最长的长度。如果没有，那么就是文件夹，把当前的长度给level+1。比较简单的处理方法使用了istringstream可以简单处理掉\n。另外\t或者\n是一个字符长度。
 
-```c++
+```cpp
 class Solution {
 public:
     int lengthLongestPath(string input) {
@@ -3055,7 +3661,7 @@ leetcode 415. Add Strings
 
 思路：按位加，学习到了简洁的写法
 
-```c++
+```cpp
 class Solution {
 public:
     string addStrings(string num1, string num2) {
@@ -3081,7 +3687,7 @@ leetcode 796. Rotate String
 
 思路：令C=A+A，如果C中能够找到B那么A就可以通过若干次移动变成C。
 
-```c++
+```cpp
 class Solution {
 public:
     bool rotateString(string A, string B) {
@@ -3098,7 +3704,7 @@ leetcode 812. Largest Triangle Area
 思路：套公式如下：
 ![](https://images2018.cnblogs.com/blog/391947/201808/391947-20180827003457034-465504228.jpg)
 
-```c++
+```cpp
 class Solution {
 public:
     double largestTriangleArea(vector<vector<int>>& points) {
