@@ -1,5 +1,277 @@
 # LeetCodeAndOtherOJ
 
+## 不重复数字，重复数字问题
+
+leetcode 357 Count Numbers with Unique Digits
+
+题目描述：给定一个n，求出[0,$10^n$)之间数字中没有重复数字的数量。
+
+思路：开始想算出重复的，使用总共的减去重复的，但是太麻烦了。后来发现直接计算不重复的即可。
+如果只有1位，那么有10个[0-9]，如果是2位，那么第一位可以从0-9中间选一个，第二位可以在其余的9个中选一个。后面的数字相同的逻辑。
+
+```cpp
+class Solution {
+public:
+    int countNumbersWithUniqueDigits(int n) {
+        int res = 1;
+        for(int i=1;i<=n;++i) {
+            res += f(i);
+        }
+        return res;
+    }
+    
+    int f(int i) {
+        if(i == 1) return 9;
+        int x = 9, total=9;
+        for(int j=0;j<i-1;++j) {
+            total = total * x;
+            x--;
+        }
+        return total;
+    }
+};
+```
+
+## DFS
+
+leetcode 401 Binary Watch
+
+题目描述：给定一个二进制表，求出时间。
+
+思路：主要学习一种简单的写法，使用了bitset
+
+```cpp
+class Solution {
+public:
+    vector<string> readBinaryWatch(int num) {
+        vector<string> res;
+        for (int h = 0; h < 12; ++h) {
+            for (int m = 0; m < 60; ++m) {
+                if (bitset<10>((h << 6) + m).count() == num) {
+                    res.push_back(to_string(h) + (m < 10 ? ":0" : ":") + to_string(m));
+                }
+            }
+        }
+        return res;
+    }
+};
+```
+
+leetcode 526 Beautiful Arrangement
+
+题目描述：假设有从 1 到 N 的 N 个整数，如果从这 N 个数字中成功构造出一个数组，使得数组的第 i 位 (1 <= i <= N) 满足如下两个条件中的一个，我们就称这个数组为一个优美的排列。条件：
+
+第 i 位的数字能被 i 整除
+i 能被第 i 位上的数字整除
+现在给定一个整数 N，请问可以构造多少个优美的排列？
+
+
+思路：递归生成排列，判断是不是符合条件。
+
+```cpp
+class Solution {
+public:
+    int countArrangement(int N) {
+        vector<int> v(N+1);
+        for(int i=1;i<=N;++i) {
+            v[i] = i;
+        }
+        int res = 0;
+        dfs(v, 1, res);
+        return res;
+    }
+    
+    void dfs(vector<int> &v, int pos, int &res) {
+        if(pos == v.size()) {
+            res++;
+            return;
+        }
+        for(int i=pos; i<v.size(); ++i) {
+            swap(v[pos], v[i]);
+            if(v[pos] % pos == 0 || pos % v[pos] == 0)
+                dfs(v, pos+1, res);
+            swap(v[pos], v[i]);
+        }
+    }
+};
+```
+
+leetcode 784 Letter Case Permutation
+
+题目描述：给定一个字符串，可以把字母变成大写或者小写，求出所有字符串。
+
+思路：dfs，遇到字符分叉搜索两种情况。
+
+```cpp
+class Solution {
+public:
+    vector<string> letterCasePermutation(string S) {
+        vector<string> res;
+        dfs(res, S, 0);
+        return res;
+    }
+    
+    void dfs(vector<string> &res, string & s, int pos) {
+        if(pos == s.size()) {
+            res.push_back(s);
+            return;
+        }
+        if((s[pos] >= 'a' && s[pos] <= 'z') || (s[pos] >= 'A' && s[pos] <= 'Z')) {
+            dfs(res, s, pos+1);
+            s[pos] = s[pos] >= 'a' ? s[pos] - 'a' + 'A' : s[pos] - 'A' + 'a';
+            dfs(res, s, pos+1);
+        } else {
+            dfs(res, s, pos+1);
+        }
+    }
+};
+```
+
+leetcode 842 Split Array into Fibonacci Sequence
+
+题目描述：给定一个数字组成的字符串，拆分字符串并判断能否构成斐波那切数列。
+
+思路：进行dfs搜索，根据不同情况进行剪枝。注意stoi只能返回int类型。
+
+```cpp
+class Solution {
+public:
+    vector<int> splitIntoFibonacci(string S) {
+        vector<int> res, tmp;
+        dfs(S, 0, tmp, res);
+        return res;
+    }
+    
+    void dfs(string &s, int pos, vector<int> &tmp, vector<int> &res) {
+        if(res.size() > 0) return;
+        if(s.size() == pos) {
+            if(tmp.size() >= 3)
+                res = tmp;
+            return;
+        }
+        for(int i=pos+1;i<=s.size();++i) {
+            string snum = s.substr(pos, i-pos);
+            if(snum[0] == '0' && snum.size() > 1) return;
+            if(snum.size() >= 11 || (snum.size() == 10 && snum > "2147483647")) return;
+            int num = stoi(snum);
+            tmp.push_back(num);
+            int val = isValid(tmp);
+            if(val == 1) dfs(s, i, tmp, res);
+            else if(val == 2) {
+                tmp.pop_back();
+                break;
+            }
+            tmp.pop_back();
+        }
+    }
+    
+    int isValid(vector<int> &res) {
+        if(res.size() < 3) return 1;
+        for(int i=2;i<res.size();++i) {
+            long long int s1 = res[i-2];
+            long long int s2 = res[i-1];
+            long long int s = s1 + s2;
+            if(s > INT_MAX) return 2;
+            if(s < res[i]) return 2;
+            else if(s > res[i]) return 3;
+        }
+        return 1;
+    }
+};
+
+
+```
+
+leetcode 980 Unique Paths III
+
+题目描述：给定一个矩阵，1代表开始为止，2代表结束为止，-1代表障碍物，0代表路。求走过所有0的情况下，从1到2的路径的数量。
+
+思路：dfs，每次走一步，直到0的数量变为0.
+
+```cpp
+class Solution {
+public:
+    int uniquePathsIII(vector<vector<int>>& grid) {
+        int cnt = 1, res=0;
+        int start_x, start_y, end_x, end_y;
+        for(int i=0;i<grid.size();++i) {
+            for(int j=0;j<grid[0].size();++j) {
+                if(grid[i][j] == 0) cnt++;
+                if(grid[i][j] == 1) {
+                    start_x = i;
+                    start_y = j;
+                }
+                if(grid[i][j] == 2) {
+                    end_x = i;
+                    end_y = j;
+                }
+            }
+        }
+        dfs(grid, start_x, start_y, end_x, end_y, cnt, res);
+        return res;
+    }
+    
+    void dfs(vector<vector<int>> &grid, int start_x, int start_y, int end_x, int end_y, int cnt, int& res) {
+        if(start_x < 0 || start_x >= grid.size() || start_y < 0 || start_y >= grid[0].size() || grid[start_x][start_y] == -1) return;
+        if(cnt == 0) {
+            // cout << start_x << " " << start_y << " " << end_x << " " << end_y << endl;
+            if(start_x == end_x && start_y == end_y) res++;
+            return;
+        }
+        if(grid[start_x][start_y] == 2) return;
+        cnt--;
+        grid[start_x][start_y] = -1;
+        dfs(grid, start_x+1, start_y, end_x, end_y, cnt, res);
+        dfs(grid, start_x, start_y+1, end_x, end_y, cnt, res);
+        dfs(grid, start_x-1, start_y, end_x, end_y, cnt, res);
+        dfs(grid, start_x, start_y-1, end_x, end_y, cnt, res);
+        cnt++;
+        grid[start_x][start_y] = 0;
+    }
+};
+```
+
+leetcode 996 Number of Squareful Arrays
+
+题目描述：给定一个数组，求出能够成为完美平方数组的排列数量。
+
+思路：dfs，通过交换，不断生成排列，每次生成之后可以测试交换到当前位置为止，是否满足条件。
+
+```cpp
+class Solution {
+public:
+    int numSquarefulPerms(vector<int>& A) {
+        set<vector<int>> s;
+        dfs(A, 0, s);
+        return s.size();
+    }
+    
+    void dfs(vector<int> &A, int pos, set<vector<int>>& s) {
+        if(pos == A.size()) {
+            if(isValid(A, A.size()-1)) {
+                s.insert(A);
+            }
+            return ;
+        }
+        for(int i=pos;i<A.size();++i) {
+            if(i!=pos && A[i] == A[pos]) continue;
+            swap(A[pos], A[i]);
+            if(isValid(A, pos-1))
+                dfs(A, pos+1, s);
+            swap(A[pos], A[i]);
+        }
+    }
+    
+    bool isValid(vector<int>& A, int end) {
+        for(int i=0;i<end;++i) {
+            int num = sqrt(A[i] + A[i+1]);
+            if(num * num != (A[i] + A[i+1])) return false;
+        }
+        return true;
+    }
+};
+```
+
 ## 背包问题
 *0-1背包问题*
 
@@ -253,7 +525,7 @@ public:
 ```
 
 ## 回文串问题
-最长回文字串问题。回文串分为两种，奇数长度和偶数长度。例如：aba，abba。为了方便求解在字符串开始、结束、任意两个字符中间添加#号，变成#a#b#a#, #a#b#b#a#。这样做的好处是把奇数和偶数的回文串都转换成了奇数的回文串。暴力算法，根据每个点依次向两边展开，求出最长的回文字串。这种算法的时间复杂度是O(n*n)。字符串变换之后和变换之前的关系如下：(1)原始回文子串的长度等于转换之后的回文字串的半径-1。(2)在变换后的字符串开始添加$符号，变换后的字符串(位置-半径)/2是变换之前回文串开始的位置。
+最长回文字串问题。回文串分为两种，奇数长度和偶数长度。例如：aba，abba。为了方便求解在字符串开始、结束、任意两个字符中间添加#号，变成#a#b#a#, #a#b#b#a#。这样做的好处是把奇数和偶数的回文串都转换成了奇数的回文串。暴力算法，根据每个点依次向两边展开，求出最长的回文字串。这种算法的时间复杂度是$O(n^2)$。字符串变换之后和变换之前的关系如下：(1)原始回文子串的长度等于转换之后的回文字串的半径-1。(2)在变换后的字符串开始添加$符号，变换后的字符串(位置-半径)/2是变换之前回文串开始的位置。
 
 马拉车算法，马拉车算法的思路是基于已经探索的部分，继续探索未探索的部分。例如，在字符串第i个位置，可以利用前面的信息，直接探索半径大于3的范围内是否为回文串。这样便极大的减小了时间复杂度。首先介绍算法使用的符号和变量，id代表当前能延伸到最右端位置的回文串的中心，mx代表当前能延长到最右端的回文串的最右端位置，i代表我们要探索的字符串的位置，j代表i关于id对称的位置。数组p记录了以每个字符为中心的最长回文串的半径。
 
@@ -385,6 +657,33 @@ public:
             i++;j--;
         }
         return true;
+    }
+};
+```
+
+### 最长回文子序列
+最长回文子序列使用动归求解，使用二维的dp矩阵，dp[i][j]表示字符串在i到j范围内，最长回文字串的长度。
+考虑两种情况：(1)s[i] == s[j]，dp[i][j] = dp[i+1][j-1] + 2；(2)s[i] != s[j]，dp[i][j] = max(dp[i+1][j], dp[i][j-1])
+可以看出，矩阵是沿着对角线填充的。
+
+leetcode 516 Longest Palindromic Subsequence
+
+题目描述：给定一个字符串，求最长回文子序列的长度。
+
+```cpp
+class Solution {
+public:
+    int longestPalindromeSubseq(string s) {
+        vector<vector<int>> dp(s.size(), vector<int>(s.size(), 0));
+        for(int i=0;i<s.size();++i) dp[i][i] = 1;
+        for(int i=1;i<s.size();++i) {
+            for(int j=0;j+i<s.size();++j) {
+                if(s[j] == s[j+i]) dp[j][j+i] = dp[j+1][j+i-1] + 2;
+                else dp[j][j+i] = max(dp[j][j+i-1], dp[j+1][j+i]);
+            }
+        }
+        return dp[0][s.size()-1];
+        
     }
 };
 ```
@@ -523,6 +822,7 @@ public:
 };
 ```
 
+
 leetcode 367 Valid Perfect Square
 
 题目描述：验证一个数字是否是平方数
@@ -564,6 +864,99 @@ int find(vector<int>& nums, int target) {
 }
 ```
 如果nums[mid] < target那么在右边查找，反之在左边查找。
+
+leetcode 302 Smallest Rectangle Enclosing Black Pixels
+
+题目描述：给定一个01matrix，0代表白色点，1代表黑色点。给定一个点x,y代表一个黑色点的位置。求出能包含所有黑色点的最小矩形的面积。
+
+思路：
+1. 开始没明白为什么给一个点，直接暴力的做法。遍历整个matrix，记录左边，右边，上边，下边的边界。求出面积。复杂度$O(n^2)$.
+
+```cpp
+class Solution {
+public:
+    int minArea(vector<vector<char>>& image, int x, int y) {
+        int res=0;
+        int left=-1,right=-1,top=-1,bottom=-1;
+        for(int i=0;i<image.size();++i) {
+            for(int j=0;j<image[0].size();++j) {
+                if(image[i][j] == '1') {
+                    left = left == -1 ? j : min(left, j);
+                    right = right == -1 ? j : max(right, j);
+                    top = top == -1 ? i : min(i, top);
+                    bottom = bottom == -1 ? i : max(i, bottom);
+                }
+            }
+        }
+        res = (right - left + 1) * (bottom - top + 1);
+        return res;
+    }
+};
+```
+
+2. 使用lower_bound，找上边界和左边界的时候相target相当于是1，找右边界或者下边界的时候target相当于是2。
+
+```cpp
+class Solution {
+public:
+    int minArea(vector<vector<char>>& image, int x, int y) {
+        int left,right,top=0,bottom=0;
+        int res = 0;
+        top = find_h(image, 0, x+1, true);
+        bottom = find_h(image, x, image.size(), false);
+        left = find_v(image, 0, y+1, true);
+        right = find_v(image, y, image[0].size(), false);
+        // cout << left << " " << right << " " << top << " " << bottom << endl;
+        res = (right-left) * (bottom-top);
+        return res;
+    }
+    
+    int find_v(vector<vector<char>> &image, int i, int j, bool left) {
+        while(i < j) {
+            int mid = i + (j - i) / 2;
+            // cout << i << " " << j << " " << mid << endl;
+            bool flag = false;
+            for(int k = 0; k < image.size(); ++k) {
+                if(image[k][mid] == '1') {
+                    if(left) j = mid;
+                    else i = mid + 1;
+                    flag = true;
+                    break;
+                }
+            }
+            if(!flag) {
+                if(left) i = mid + 1;
+                else j = mid;
+            }
+        }
+        // cout<< i << endl;
+        return i;
+    }
+    
+    int find_h(vector<vector<char>> &image, int i, int j, bool top) {
+        while(i < j) {
+            int mid = i + (j - i) / 2;
+            // cout << i << " " << j << " " << mid << endl;
+            bool flag = false;
+            for(int k=0;k<image[0].size();++k) {
+                if(image[mid][k] == '1') {
+                    if(top) j = mid;
+                    else i = mid + 1;
+                    flag = true;
+                    break;
+                }
+            }
+            if(!flag) {
+                if(top) i = mid + 1;
+                else j = mid;
+            }
+        }
+        // cout<< i << endl;
+        return i;
+    }
+};
+```
+
 
 leetcode 475 Heaters
 
@@ -637,6 +1030,7 @@ public:
     }
 };
 ```
+
 
 ### upper_bound
 查找第一个大于目标值的数，可变形为查找最后一个不大于目标值的数
@@ -1515,6 +1909,59 @@ def dfs(self, left, right, val, ret):
         self.dfs(left, right-1, val+")", ret)
 ```
 
+leetcode 25 Reverse Nodes in k-Group
+
+题目描述：k个一组反转链表，链表每k个元素做一次反转，如果不足k个不做反转。
+
+思路：分两步实现，一个划分，一个反转。
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* reverseKGroup(ListNode* head, int k) {
+        ListNode *dummy_node = new ListNode(-1);
+        ListNode *cur = head;
+        ListNode *p, *tmp, *prev=dummy_node;
+        int cnt = 0;
+        while(cur) {
+            p = cur;
+            cnt = 0;
+            for(int i=0;i<k && p;++i) {
+                cnt++;
+                p=p->next;
+            }
+            if(cnt == k) tmp = reverseOneGroup(cur, cnt);
+            else tmp = cur;
+            prev->next = tmp;
+            prev = cur;
+            cur = p;
+        }
+        return dummy_node->next;
+    }
+    
+    ListNode* reverseOneGroup(ListNode *head, int len) {
+        ListNode* dummy_node = new ListNode(-1);
+        ListNode *tmp, *p = head;
+        for(int i=0;i<len;++i) {
+            tmp = p->next;
+            p->next = dummy_node->next;
+            dummy_node->next = p;
+            p = tmp;
+        }
+        p = dummy_node->next;
+        return dummy_node->next;
+    }
+};
+```
+
 leetcode 29 Divide Two Integers
 
 题目描述：给定两个正数，求整除之后的结果。不能用乘法，除法，mod。
@@ -1554,6 +2001,128 @@ def dfs(self, dividend, divisor, l):
             num += l[-1]
         return num, d
     return 0, dividend
+```
+
+leetcode 30 Substring with Concatenation of All Words
+
+题目描述：给定一个字符串 s 和一些长度相同的单词 words。找出 s 中恰好可以由 words 中所有单词串联形成的子串的起始位置。
+注意子串要与 words 中的单词完全匹配，中间不能有其他字符，但不需要考虑 words 中单词串联的顺序。
+
+思路：
+
+1. 按位置遍历，每次把所有单词拼接一次。开始没有优化，会超时。可以判断，如果当前的字符串到结尾的长度小于单词表中所有单词的长度和的时候就可以结束了。
+
+```cpp
+class Solution {
+public:
+    vector<int> findSubstring(string s, vector<string>& words) {
+        vector<int> res;
+        if(words.size() == 0 || s.size() == 0) return res;
+        int len = words[0].size();
+        map<string, int> m;
+        int size = s.size() - (int)(len*words.size());
+        for(auto w: words) m[w]++;
+        for(int i=0;i<=size;++i) {
+            // cout << i << endl;
+            if(dfs(s, m, i, len, words.size())) res.push_back(i);
+        }
+        return res;
+    }
+    
+    bool dfs(string &s, map<string, int> m, int start, int len, int words_size) {
+        while(words_size > 0) {
+            if(start >= s.size()) return false;
+            if(start + len > s.size()) return false;
+            string sub = s.substr(start, len);
+            // cout << sub << endl;
+            if(m.find(sub) == m.end()) return false;
+            if(m[sub] == 0) return false;
+            m[sub]--;
+            words_size--;
+            start += len; 
+        }
+        
+        return true;
+    }
+};
+```
+
+leetcode 32 最长有效括号
+
+题目描述：给定一个只包含 '(' 和 ')' 的字符串，找出最长的包含有效括号的子串的长度。
+
+思路：使用栈存储每个左括号的位置，如果遇到右括号，此时如果栈为空，那么更新start=i+1，否则栈顶元素出栈，并更新res。  
+
+```cpp
+class Solution {
+public:
+    int longestValidParentheses(string s) {
+        stack<int> st;
+        int res = 0, start=0;
+        for(int i=0;i<s.size();++i) {
+            if(s[i] == '(') 
+                st.push(i);
+            else {
+                if(st.empty()) start = i + 1;
+                else {
+                    st.pop();
+                    res = st.empty() ? max(res, i-start+1) : max(res, i-st.top());
+                }
+            }
+        }
+        return res;
+    }
+};
+```
+
+leetcode 37 Sudoku Solver
+
+题目描述：给定一个未完成的数独，完成它。
+
+思路：dfs暴力搜索。
+
+```cpp
+class Solution {
+public:
+    void solveSudoku(vector<vector<char>>& board) {
+        dfs(board, 0, 0);
+    }
+    
+    bool dfs(vector<vector<char>> &board, int i, int j) {
+        if(i == 9) return true;
+        if(j == 9) return dfs(board, i+1, 0);
+        if(board[i][j] != '.') {
+            return dfs(board, i, j+1);
+        }
+        bool res = false;
+        for(int k=0;k<9;++k) {
+            if(isValid(board, i, j, '1'+k)) {
+                board[i][j] = '1' + k;
+                res = dfs(board, i, j+1);
+                if(res) return res;
+            }
+        } 
+        board[i][j] = '.';
+        return false;
+    }
+    
+    bool isValid(vector<vector<char>> &board, int x, int y, char v) {
+        for(int i=0;i<9;++i) {
+            if(i != x && board[i][y] == v) return false;
+        }
+        for(int i=0;i<9;++i) {
+            if(i != y && board[x][i] == v) return false;
+        }
+        int start_x = x / 3, start_y = y / 3;
+        for(int i=0;i<3;++i) {
+            for(int j=0;j<3;++j) {
+                if(start_x * 3 + i == x && start_y * 3 + j == y) continue;
+                if(board[start_x * 3 + i][start_y * 3 + j] == v) return false;
+            }
+        }
+        return true;
+    }
+};
 ```
 
 leetcode 48 Rotate Image
@@ -2133,57 +2702,22 @@ leetcode 79 Word Search
 class Solution {
 public:
     bool exist(vector<vector<char>>& board, string word) {
-        int m = board.size(), n = board[0].size();
-        vector<vector<bool>> isVisited(m, vector<bool>(n, false));
-        for(int i=0;i<m;++i) {
-            for(int j=0;j<n;++j) {
-                if(board[i][j] == word[0]) {
-                    isVisited[i][j] = true;
-                    if(dfs(board, word.substr(1), isVisited, i, j)) {
-                        return true;
-                    } 
-                    isVisited[i][j] = false;
-                }
+        for(int i=0;i<board.size();++i) {
+            for(int j=0;j<board[0].size();++j) {
+                if(dfs(board, i, j, word, 0)) return true;
             }
         }
         return false;
     }
     
-    bool dfs(vector<vector<char>>& board, string word, vector<vector<bool>> &isVisited, int i, int j) {
-        if(word.size() == 0) {
-            return true;
-        }
-        bool res = false;
-        if(i>0 && !isVisited[i-1][j] && word[0] == board[i-1][j]) {
-            isVisited[i-1][j] = true;
-            res = dfs(board, word.substr(1), isVisited, i-1, j);
-            isVisited[i-1][j] = false;
-        }
-        if(res) {
-                return true;
-        }
-        if(j>0 && !isVisited[i][j-1] && word[0] == board[i][j-1]) {
-            isVisited[i][j-1] = true;
-            res = dfs(board, word.substr(1), isVisited, i, j-1);
-            isVisited[i][j-1] = false;
-        }
-        if(res) {
-            return true;
-        }
-        if(i<board.size()-1 && !isVisited[i+1][j] && word[0] == board[i+1][j]) {
-            isVisited[i+1][j] = true;
-            res = dfs(board, word.substr(1), isVisited, i+1, j);
-            isVisited[i+1][j] = false;
-        }
-        if(res) {
-            return true;
-        }
-        if(j<board[0].size()-1 && !isVisited[i][j+1] && word[0] == board[i][j+1]) {
-            isVisited[i][j+1] = true;
-            res = dfs(board, word.substr(1), isVisited, i, j+1);
-            isVisited[i][j+1] = false;
-        }
-        return res;
+    bool dfs(vector<vector<char>> &board, int i, int j, string &word, int wi) {
+        if(wi == word.size()) return true;
+        if(i < 0 || i >= board.size() || j < 0 || j >=board[0].size() || board[i][j] != word[wi]) return false;
+        char c = board[i][j];
+        board[i][j] = '.';
+        bool b = dfs(board, i+1, j, word, wi+1) || dfs(board, i-1, j, word, wi+1) || dfs(board, i, j-1, word, wi+1) || dfs(board, i, j+1, word, wi+1);
+        board[i][j] = c;
+        return b;
     }
 };
 ```
@@ -2441,7 +2975,8 @@ leetcode 94 Binary Tree Inorder Traversal
 
 题目描述：中序遍历
 
-思路：递归
+思路：
+1. 递归
 
 ```cpp
 /**
@@ -2471,6 +3006,47 @@ public:
     }
 };
 ```
+2. 非递归
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> res;
+        if(!root) return res;
+        stack<TreeNode*> s;
+        s.push(root);
+        while(root->left) {
+            s.push(root->left);
+            root = root->left;
+        }
+        while(!s.empty()) {
+            TreeNode *p = s.top();
+            s.pop();
+            res.push_back(p->val);
+            if(p->right) {
+                s.push(p->right);
+                p = p->right;
+                while(p->left) {
+                    s.push(p->left);
+                    p = p->left;
+                }
+            }
+        }
+        return res;
+    }
+};
+```
+
 
 leetcode 96 Unique Binary Search Trees
 
@@ -2479,6 +3055,7 @@ leetcode 96 Unique Binary Search Trees
 思路：动归，以k为根，那么左子树是1~k-1，右子树是k+1 ~n。那么num[k]=num[k-1]+num[n-k-1+1]。归纳公式如下：$$C_0=1 \ \  and \ \ C_{n+1}=\sum_{i=0}^nC_iC_{n-i}$$
 
 以上公式就是卡塔兰数。
+
 
 ```cpp
 class Solution {
@@ -3238,6 +3815,45 @@ public:
 };
 ```
 
+leetcode 124 Binary Tree Maximum Path Sum
+
+题目描述：给定一个二叉树，把二叉树的任意路径上的值相加，找出最大值。
+
+思路：dfs查询比较。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    int maxPathSum(TreeNode* root) {
+        if(!root) return 0;
+        int res = INT_MIN;
+        dfs(root, res);
+        return res;
+    }
+    
+    int dfs(TreeNode *root, int &res) {
+        if(!root) return 0;
+        int l = dfs(root->left, res);
+        int r = dfs(root->right, res);
+        int n = l + r + root->val;
+        n = max(n, root->val);
+        n = max(n, l+root->val);
+        n = max(n, r+root->val);
+        res = max(n, res);
+        return max(max(l, r) + root->val, root->val);
+    }
+};
+```
+
 leetcode 132 Palindrome Partitioning II
 
 题目描述：给定一个字符串，求出最少需要多少次切割，才能使得每一部分都是一个回文串。
@@ -3584,6 +4200,91 @@ private:
  */
 ```
 
+leetcode 156 Binary Tree Upside Down
+
+题目描述：给定二叉树，二叉树存在右子的时候一定存在左子，并且右子没有儿子。上下翻转二叉树。规则是，根变成右子，左子变成根，右子变成左子。
+
+思路：递归。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* upsideDownBinaryTree(TreeNode* root) {
+        TreeNode *res=NULL;
+        if(!root) return res;
+        dfs(root, res);
+        return res;
+    }
+    
+    TreeNode *dfs(TreeNode *root, TreeNode * &res) {
+        if(!root) return NULL;
+        TreeNode *left = dfs(root->left, res);
+        TreeNode *right = dfs(root->right, res);
+        if(left || right) {
+            left->left = right;
+            left->right = root;
+            root->left = NULL;
+            root->right = NULL;
+        }
+        if(!res) res = root;
+        return root;
+    }
+};
+```
+
+leetcode 169 Majority Element
+
+题目描述：给定一个数组，找出中间出现超过n/2次的数字。
+
+思路：
+1. 最直接的想法，使用一个数组记录下每个出现的次数。
+
+```cpp
+class Solution {
+public:
+    int majorityElement(vector<int>& nums) {
+        map<int, int> m;
+        for(int i=0;i<nums.size();++i) {
+            m[nums[i]]++;
+        }
+        int res_max = 0, iter=0;
+        for(auto iter=m.begin();iter!=m.end();iter++) {
+            if(res_max < iter->second) {
+                res_max = iter->second;
+                res = iter->first;
+            }
+        }
+        return res;
+    }
+};
+```
+
+2. 使用一个cnt记录次数，使用num记录当前的数字。如果cnt=0，那么使用num记录，cnt++。如果cnt>0，num相同，cnt++，否则cnt--。出现超过1/2的数字一定会被保留下来。
+
+```cpp
+class Solution {
+public:
+    int majorityElement(vector<int>& nums) {
+        int cnt=0, num=nums[0];
+        for(auto n : nums) {
+            if(cnt == 0) {num = n; cnt++;}
+            else if(n == num) cnt++;
+            else cnt--;
+        }
+        return num;
+    }
+};
+```
+
 leetcode 172 Factorial Trailing Zeroes
 
 题目描述：给定n，求n！尾部0的个数
@@ -3602,6 +4303,61 @@ public:
         return res;
     }
 };
+```
+
+leetcode 173 Binary Search Tree Iterator
+
+题目描述：实现一个BST的迭代器
+
+思路：非递归的中序遍历。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class BSTIterator {
+    stack<TreeNode*> s;
+public:
+    BSTIterator(TreeNode* root) {
+        while(root) {
+            s.push(root);
+            root = root->left;
+        }
+    }
+    
+    /** @return the next smallest number */
+    int next() {
+        TreeNode *t = s.top();
+        s.pop();
+        if(t->right) {
+            s.push(t->right);
+            TreeNode *p = t->right;
+            while(p->left) {
+                s.push(p->left);
+                p = p->left;
+            }
+        } 
+        return t->val;
+    }
+    
+    /** @return whether we have a next smallest number */
+    bool hasNext() {
+        return !s.empty();
+    }
+};
+
+/**
+ * Your BSTIterator object will be instantiated and called as such:
+ * BSTIterator* obj = new BSTIterator(root);
+ * int param_1 = obj->next();
+ * bool param_2 = obj->hasNext();
+ */
 ```
 
 leetcode 179 Largest Number
@@ -3623,6 +4379,898 @@ public:
             res += to_string(nums[i]);
         }
         return res[0] == '0' ? "0" : res;
+    }
+};
+```
+
+leetcode 186 Reverse Words in a String II
+
+题目描述：给定一个string，按照单词翻转。string按字符存储在vector中。
+
+思路：先翻转整个字符串，再翻转每个单词。
+
+```cpp
+class Solution {
+public:
+    void reverseWords(vector<char>& str) {
+        reverse(str.begin(), str.end());
+        int j;
+        for(int i=0;i<str.size();i=j+1) {
+            for(j=i;j<str.size();++j) {
+                if(str[j] == ' ') break;
+            }
+            reverse(str.begin()+i, str.begin()+j);
+        }
+    }
+};
+```
+
+leetcode 210 Course Schedule II
+
+题目描述：给定n个课程，和这n个可能的修读顺序。[0,1]表示如果修读0，要先修读1。求出一个可行的修读顺序。
+
+思路：拓扑排序。拓扑排序找到入度为0的node，把相邻node的入度-1。直到找不到入度为0的node。如果存在环，最后输出的课程的数量少于n。
+
+```cpp
+class Solution {
+public:
+    vector<int> findOrder(int numCourses, vector<pair<int, int>>& prerequisites) {
+        vector<int> res;
+        vector<int> indegree(numCourses, 0);
+        vector<vector<int>> neighbors(numCourses, vector<int>(0));
+        for(int i=0;i<prerequisites.size();++i) {
+            indegree[prerequisites[i].first]++;
+            neighbors[prerequisites[i].second].push_back(prerequisites[i].first);
+        }
+        queue<int> q;
+        for(int i=0;i<numCourses;++i) {
+            if(indegree[i] == 0) q.push(i);
+        }
+        while(!q.empty()) {
+            int c = q.front();
+            q.pop();
+            res.push_back(c);
+            for(int i=0;i<neighbors[c].size();++i) {
+                indegree[neighbors[c][i]]--;
+                if(indegree[neighbors[c][i]] == 0) q.push(neighbors[c][i]);
+            }
+        }
+        if(res.size() == numCourses) return res;
+        else {res.clear(); return res;}
+    }
+};
+```
+
+leetcode 211 Add and Search Word - Data structure design
+
+题目描述：建立一个数据结构，可以添加单词，查询单词是否在其中。查询的时候可以使用正则表达式的'.'。
+
+思路：这道题可以使用字典树，就是一个26叉树。我在字典树的顶端加入了一个虚拟的节点，添加单词的时候把对应位置的children指针变成不是null。如果是单词的最后一个位置，cnt设为1。查询的时候，如果遇到'.'那么做广度搜索。
+
+```cpp
+struct node {
+    int cnt;
+    vector<node*> children;
+    node(): cnt(0), children(26, NULL){}
+};
+class WordDictionary {
+public:
+    /** Initialize your data structure here. */
+    node *root;
+    WordDictionary() {
+        root= new node();
+    }
+    
+    /** Adds a word into the data structure. */
+    void addWord(string word) {
+        node *p=root;
+        for(int i=0;i<word.size();++i) {
+            if(!p->children[word[i]-'a']) p->children[word[i]-'a']=new node();
+            p = p->children[word[i]-'a'];
+        }
+        p->cnt++;
+    }
+    
+    /** Returns if the word is in the data structure. A word could contain the dot character '.' to represent any one letter. */
+    bool search(string word) {
+        return search(word, root);
+    }
+    
+    bool search(string word, node* n) {
+        node *p = n;
+        if(!p) return false;
+        if(word.size() == 0) return p->cnt!=0;
+        for(int i=0;i<word.size();++i) {
+            if(word[i] == '.') {
+                bool flag = false;
+                for(int j=0;j<26;++j) {
+                    if(p->children[j]) {
+                        flag |= search(word.substr(i+1), p->children[j]);
+                    }
+                    if(flag) return flag;
+                }
+                return flag;
+            } else {
+                if(!p->children[word[i]-'a']) return false;
+                p = p->children[word[i]-'a'];
+            }
+        }
+        return p->cnt!=0;
+    }
+};
+
+/**
+ * Your WordDictionary object will be instantiated and called as such:
+ * WordDictionary obj = new WordDictionary();
+ * obj.addWord(word);
+ * bool param_2 = obj.search(word);
+ */
+```
+
+别人的写法比较简单，放在这里对比一下：
+
+```cpp
+class WordDictionary {
+public:
+    struct TrieNode {
+    public:
+        TrieNode *child[26];
+        bool isWord;
+        TrieNode() : isWord(false) {
+            for (auto &a : child) a = NULL;
+        }
+    };
+    
+    WordDictionary() {
+        root = new TrieNode();
+    }
+    
+    // Adds a word into the data structure.
+    void addWord(string word) {
+        TrieNode *p = root;
+        for (auto &a : word) {
+            int i = a - 'a';
+            if (!p->child[i]) p->child[i] = new TrieNode();
+            p = p->child[i];
+        }
+        p->isWord = true;
+    }
+
+    // Returns if the word is in the data structure. A word could
+    // contain the dot character '.' to represent any one letter.
+    bool search(string word) {
+        return searchWord(word, root, 0);
+    }
+    
+    bool searchWord(string &word, TrieNode *p, int i) {
+        if (i == word.size()) return p->isWord;
+        if (word[i] == '.') {
+            for (auto &a : p->child) {
+                if (a && searchWord(word, a, i + 1)) return true;
+            }
+            return false;
+        } else {
+            return p->child[word[i] - 'a'] && searchWord(word, p->child[word[i] - 'a'], i + 1);
+        }
+    }
+    
+private:
+    TrieNode *root;
+};
+
+// Your WordDictionary object will be instantiated and called as such:
+// WordDictionary wordDictionary;
+// wordDictionary.addWord("word");
+// wordDictionary.search("pattern");
+```
+
+leetcode 212 Word Search II
+
+题目描述：给定一个wordlist和一个矩阵，查找在矩阵中出现的word。
+
+思路：开始使用了dfs，一个单词一个单词的查找，虽然过了，但是运行结果1800ms+。看了别人的方法，使用字典树，把所有单词构成字典树，相当于同时查找多个单词。这样52ms就结束了。
+
+```cpp
+class Solution {
+public:
+    struct TrieNode {
+        TrieNode *child[26];
+        string str;
+        TrieNode() : str("") {
+            for (auto &a : child) a = NULL;
+        }
+    };
+    struct Trie {
+        TrieNode *root;
+        Trie() : root(new TrieNode()) {}
+        void insert(string s) {
+            TrieNode *p = root;
+            for (auto &a : s) {
+                int i = a - 'a';
+                if (!p->child[i]) p->child[i] = new TrieNode();
+                p = p->child[i];
+            }
+            p->str = s;
+        }
+    };
+    vector<string> findWords(vector<vector<char> >& board, vector<string>& words) {
+        vector<string> res;
+        if (words.empty() || board.empty() || board[0].empty()) return res;
+        vector<vector<bool> > visit(board.size(), vector<bool>(board[0].size(), false));
+        Trie T;
+        for (auto &a : words) T.insert(a);
+        for (int i = 0; i < board.size(); ++i) {
+            for (int j = 0; j < board[i].size(); ++j) {
+                if (T.root->child[board[i][j] - 'a']) {
+                    search(board, T.root->child[board[i][j] - 'a'], i, j, visit, res);
+                }
+            }
+        }
+        return res;
+    }
+    void search(vector<vector<char> > &board, TrieNode *p, int i, int j, vector<vector<bool> > &visit, vector<string> &res) { 
+        if (!p->str.empty()) {
+            res.push_back(p->str);
+            p->str.clear();
+        }
+        int d[][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        visit[i][j] = true;
+        for (auto &a : d) {
+            int nx = a[0] + i, ny = a[1] + j;
+            if (nx >= 0 && nx < board.size() && ny >= 0 && ny < board[0].size() && !visit[nx][ny] && p->child[board[nx][ny] - 'a']) {
+                search(board, p->child[board[nx][ny] - 'a'], nx, ny, visit, res);
+            }
+        }
+        visit[i][j] = false;
+    }
+};
+```
+
+leetcode 218 The Skyline Problem
+
+题目描述：城市的天际线是从远处观看该城市中所有建筑物形成的轮廓的外部轮廓。现在，假设您获得了城市风光照片（图A）上显示的所有建筑物的位置和高度，请编写一个程序以输出由这些建筑物形成的天际线（图B）。
+![](https://leetcode-cn.com/static/images/problemset/skyline1.jpg)
+![](https://leetcode-cn.com/static/images/problemset/skyline2.jpg)
+每个建筑物的几何信息用三元组 [Li，Ri，Hi] 表示，其中 Li 和 Ri 分别是第 i 座建筑物左右边缘的 x 坐标，Hi 是其高度。可以保证 0 ≤ Li, Ri ≤ INT_MAX, 0 < Hi ≤ INT_MAX 和 Ri - Li > 0。您可以假设所有建筑物都是在绝对平坦且高度为 0 的表面上的完美矩形。
+
+例如，图A中所有建筑物的尺寸记录为：[ [2 9 10], [3 7 15], [5 12 12], [15 20 10], [19 24 8] ] 。
+
+输出是以 [ [x1,y1], [x2, y2], [x3, y3], ... ] 格式的“关键点”（图B中的红点）的列表，它们唯一地定义了天际线。关键点是水平线段的左端点。请注意，最右侧建筑物的最后一个关键点仅用于标记天际线的终点，并始终为零高度。此外，任何两个相邻建筑物之间的地面都应被视为天际线轮廓的一部分。
+
+例如，图B中的天际线应该表示为：[ [2 10], [3 15], [7 12], [12 0], [15 10], [20 8], [24, 0] ]。
+
+说明:
+
+任何输入列表中的建筑物数量保证在 [0, 10000] 范围内。
+输入列表已经按左 x 坐标 Li  进行升序排列。
+输出列表必须按 x 位排序。
+输出天际线中不得有连续的相同高度的水平线。例如 [...[2 3], [4 5], [7 5], [11 5], [12 7]...] 是不正确的答案；三条高度为 5 的线应该在最终输出中合并为一个：[...[2 3], [4 5], [12 7], ...]
+
+思路：参考别人的代码，理解了很久。首先对所有的楼房做边界和高度取反，有边界和高度放入一个vector。之后按照做边界排序。每次取出一个，如果是负数，那么是做边界。这时加入multiset，反之大楼到了结束，删除multiset这个高度。每次判断当前最高高度和之前是否相同，如果不同，那么就是拐点，把拐点加入res。为了防止不重合的右边界也能顺利加入res，需要在开始加入一个0.
+
+
+```cpp
+class Solution {
+public:
+    vector<pair<int, int>> getSkyline(vector<vector<int>>& buildings) {
+        vector<pair<int, int>> h, res;
+        for(auto v : buildings) {
+            h.push_back({v[0], -v[2]});
+            h.push_back({v[1], v[2]});
+        }
+        sort(h.begin(), h.end());
+        multiset<int> m;
+        int cur = 0, pre = 0;
+        m.insert(0);
+        for(auto x : h) {
+            if(x.second < 0) m.insert(-x.second);
+            else m.erase(m.find(x.second));
+            cur = *m.rbegin();
+            if(cur != pre) {
+                res.push_back({x.first, cur});
+                pre = cur;
+            }
+        }
+        return res;
+    }
+};
+```
+
+leetcode 229 Majority Element II
+
+题目描述：给定一个数组，找出出现n/3次以上的数字。
+
+思路：根据分析，出现n/3次以上的数字只可能有0，1，2个，所以使用两个变量记录出现的次数。找出出现最多的两个数字。最后验证是否出现n/3次以上。
+
+```cpp
+class Solution {
+public:
+    vector<int> majorityElement(vector<int>& nums) {
+        int m=0,n=0,mcnt=0,ncnt=0;
+        for(int i=0;i<nums.size();++i) {
+            if(m == nums[i]) mcnt++;
+            else if(n == nums[i]) ncnt++;
+            else if(mcnt == 0) {mcnt++;m=nums[i];}
+            else if(ncnt == 0) {ncnt++;n=nums[i];}
+            else {mcnt--;ncnt--;}
+        }
+        mcnt = 0;
+        ncnt = 0;
+        for(auto x: nums) {
+            if(m == x) mcnt++;
+            else if(n == x) ncnt++;
+        }
+        vector<int> res;
+        if(mcnt > nums.size()/3) res.push_back(m);
+        if(ncnt > nums.size()/3) res.push_back(n);
+        return res;
+    }
+};
+```
+
+leetcode 238 Product of Array Except Self
+
+题目描述：给定长度为 n 的整数数组 nums，其中 n > 1，返回输出数组 output ，其中 output[i] 等于 nums 中除 nums[i] 之外其余各元素的乘积。
+
+思路：题目不允许使用除法，因此使用一个数组记录前向的乘积，一个记录后向的乘积。
+
+```cpp
+class Solution {
+public:
+    vector<int> productExceptSelf(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> fwd(n, 1), bwd(n, 1), res(n);
+        for (int i = 0; i < n - 1; ++i) {
+            fwd[i + 1] = fwd[i] * nums[i];
+        }
+        for (int i = n - 1; i > 0; --i) {
+            bwd[i - 1] = bwd[i] * nums[i];
+        }
+        for (int i = 0; i < n; ++i) {
+            res[i] = fwd[i] * bwd[i];
+        }
+        return res;
+    }
+};
+```
+
+leetcode 253 Meeting Rooms II
+
+题目描述：给定课程的开始时间和结束时间，求出最少要几个教室。
+
+思路：贪心，按照课程开始时间排序。
+
+```cpp
+/**
+ * Definition for an interval.
+ * struct Interval {
+ *     int start;
+ *     int end;
+ *     Interval() : start(0), end(0) {}
+ *     Interval(int s, int e) : start(s), end(e) {}
+ * };
+ */
+
+bool cmp(const Interval &x, const Interval &y) {
+    return x.start < y.start;
+}
+
+class Solution {
+public:
+    int minMeetingRooms(vector<Interval>& intervals) {
+        if(intervals.size() == 0) return 0;
+        sort(intervals.begin(), intervals.end(), cmp);
+        vector<int> rooms(intervals.size(), 0);
+        int res = 0;
+        for(auto x : intervals) {
+            for(int i=0;i<rooms.size();++i) {
+                if(rooms[i] <= x.start) {
+                    rooms[i] = x.end;
+                    res = max(res, i);
+                    break;
+                }
+            }
+        }
+        return res+1;
+    }
+};
+```
+
+leetcode 266 Palindrome Permutation
+
+题目描述：给定一个字符串，求该字符串的排列组合能否出现回文串。
+
+思路：求出每个字符出现的次数，只能有一个字符出现一次。
+
+```cpp
+class Solution {
+public:
+    bool canPermutePalindrome(string s) {
+        map<char, int> m; 
+        for(auto x : s) {
+            m[x] = (m[x] + 1) % 2;
+        }
+        bool flag = false;
+        for(auto iter=m.begin(); iter!=m.end();++iter) {
+            if(iter->second == 1 && flag) return false;
+            if(iter->second == 1) flag = true;
+        }
+        return true;
+    }
+};
+```
+
+leetcode 285 Inorder Successor in BST
+
+题目描述：给定一个BST和树中的一个node，求中序遍历这个node的下一个，如果没有返回null。
+
+思路：使用非递归的中序遍历即可。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* inorderSuccessor(TreeNode* root, TreeNode* p) {
+        stack<TreeNode*> s;
+        s.push(root);
+        while(root->left) {
+            s.push(root->left);
+            root = root->left;
+        }
+        while(!s.empty()) {
+            TreeNode *t = s.top();
+            s.pop();
+            if(t->right) {
+                s.push(t->right);
+                TreeNode *tt = t->right;
+                while(tt->left) {
+                    s.push(tt->left);
+                    tt = tt->left;
+                }
+            }
+            if(t == p && !s.empty()) return s.top();
+        }
+        return NULL;
+    }
+};
+```
+
+leetcode 286 Walls and Gates
+
+题目描述：给定一个矩阵，INF代表空房间，0代表门，-1代表栅栏。求每个房间到门的距离。
+
+思路：对每个门做dfs。
+
+```cpp
+class Solution {
+public:
+    void wallsAndGates(vector<vector<int>>& rooms) {
+        for(int i=0;i<rooms.size();++i) {
+            for(int j=0;j<rooms[0].size();++j) {
+                if(rooms[i][j] == 0) {
+                    dfs(rooms, i, j, 0);
+                }
+            }
+        }
+    }
+    
+    void dfs(vector<vector<int>> &rooms, int i, int j, int val) {
+        if(i<0 || i>=rooms.size() || j < 0 || j >= rooms[0].size() || rooms[i][j] < val) return ;
+        rooms[i][j] = val;
+        dfs(rooms, i+1, j, val+1);
+        dfs(rooms, i, j+1, val+1);
+        dfs(rooms, i-1, j, val+1);
+        dfs(rooms, i, j-1, val+1);
+    }
+};
+```
+
+leetcode 297 Serialize and Deserialize Binary Tree
+
+题目描述：给定一棵树，实现序列化和反序列化。
+
+思路：使用stringstream来实现。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Codec {
+public:
+
+    // Encodes a tree to a single string.
+    string serialize(TreeNode* root) {
+        ostringstream out;
+        dfs(root, out);
+        return out.str();
+    }
+
+    // Decodes your encoded data to tree.
+    TreeNode* deserialize(string data) {
+        istringstream in(data);
+        TreeNode *root;
+        root = dfs2(in);
+        return root;
+    }
+    
+    TreeNode* dfs2(istringstream &in) {
+        string val;
+        in >> val;
+        TreeNode *root = new TreeNode(-1);
+        if(val[0] == '#')  {
+            root = NULL;
+        } else {
+            root->val = stoi(val);
+            root->left = dfs2(in);
+            root->right = dfs2(in);
+        }
+        return root;
+    }
+    
+    void dfs(TreeNode *root, ostringstream &out) {
+        if(!root) {
+            out << "# ";
+            return;
+        }
+        out << root->val << " ";
+        dfs(root->left, out);
+        dfs(root->right, out);
+    }
+};
+
+// Your Codec object will be instantiated and called as such:
+// Codec codec;
+// codec.deserialize(codec.serialize(root));
+```
+
+leetcode 300 Longest Increasing Subsequence
+
+题目描述：给定一个数组，求最长的递增子序列的长度。
+
+思路：
+1. 使用dp，dp[i]代表以nums[i]结尾的最长递增子序列的长度。dp[i]=max(dp[i], dp[j]+1)，对于所有的j<i。
+
+```cpp
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        if(nums.size() == 0) return 0;
+        int res = 1;
+        vector<int> dp(nums.size(), 1);
+        for(int i=1;i<nums.size();++i) {
+            for(int j=0;j<i;++j) {
+                if(nums[i] > nums[j]) {
+                    dp[i] = max(dp[i], dp[j] + 1);
+                    res = max(dp[i], res);
+                }
+            }
+        }
+        return res;
+    }
+};
+```
+
+2. 下面我们来看一种优化时间复杂度到O(nlgn)的解法，这里用到了二分查找法，所以才能加快运行时间哇。思路是，我们先建立一个数组ends，把首元素放进去，然后比较之后的元素，如果遍历到的新元素比ends数组中的首元素小的话，替换首元素为此新元素，如果遍历到的新元素比ends数组中的末尾元素还大的话，将此新元素添加到ends数组末尾(注意不覆盖原末尾元素)。如果遍历到的新元素比ends数组首元素大，比尾元素小时，此时用二分查找法找到第一个不小于此新元素的位置，覆盖掉位置的原来的数字，以此类推直至遍历完整个nums数组，此时ends数组的长度就是我们要求的LIS的长度，特别注意的是ends数组的值可能不是一个真实的LIS，比如若输入数组nums为{4, 2， 4， 5， 3， 7}，那么算完后的ends数组为{2， 3， 5， 7}，可以发现它不是一个原数组的LIS，只是长度相等而已，千万要注意这点。
+
+```cpp
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        vector<int> v;
+        for(auto x : nums) {
+            auto iter = lower_bound(v.begin(), v.end(), x);
+            if(iter == v.end()) v.push_back(x);
+            else *iter = x;
+            
+        }
+        return v.size();
+    }
+};
+```
+
+leetcode 303 Range Sum Query - Immutable
+
+题目描述：给定一个不变的数组，求任意的区间和。
+
+思路：先把数组加起来，然后通过相减操作得到结果。
+
+```cpp
+class NumArray {
+    vector<int> dp;
+public:
+    NumArray(const vector<int>& nums) {
+        if(nums.size() == 0) return;
+        dp.resize(nums.size()+1, 0);
+        for(int i=1;i<=nums.size();++i) {
+            dp[i] = dp[i-1] + nums[i-1];
+        }
+    }
+    
+    int sumRange(int i, int j) {
+        return dp[j+1] - dp[i];
+    }
+};
+
+/**
+ * Your NumArray object will be instantiated and called as such:
+ * NumArray* obj = new NumArray(nums);
+ * int param_1 = obj->sumRange(i,j);
+ */
+```
+
+leetcode 304 Range Sum Query 2D - Immutable
+
+题目描述：给定一个matrix，不断查询区间和。
+
+思路：开始使用暴力，果然超时。后来发现可以通过矩阵的加减就可以解决了。
+
+```cpp
+class NumMatrix {
+public:
+    vector<vector<int>> dp;
+    NumMatrix(const vector<vector<int>>& matrix) {
+        if(matrix.size() == 0 || matrix[0].size() == 0) return ;
+        dp = matrix;
+        for(int i=1;i<dp[0].size();++i) {
+            dp[0][i] = dp[0][i-1] + dp[0][i];
+        }
+        for(int i=1;i<dp.size();++i) {
+            dp[i][0] = dp[i-1][0] + dp[i][0];
+        }
+        for(int i=1;i<dp.size();++i) {
+            for(int j=1;j<dp[0].size();++j) {
+                dp[i][j] = dp[i-1][j] + dp[i][j-1] - dp[i-1][j-1] + dp[i][j];
+            }
+        }
+        // cout << dp[1][0] << " " << dp[4][3] << " " << dp[1][3] << " " << dp[4][0] << endl;
+    }
+    
+    int sumRegion(int row1, int col1, int row2, int col2) {
+        // cout << row1 << " " << col1 << " " << row2 << " " << col2 << endl;
+        int res =  dp[row2][col2];
+        if(row1!=0) res -= dp[row1-1][col2];
+        if(col1!=0) res -= dp[row2][col1-1];
+        if(row1!=0 && col1!=0) res += dp[row1-1][col1-1];
+        return res;
+    }
+};
+
+/**
+ * Your NumMatrix object will be instantiated and called as such:
+ * NumMatrix* obj = new NumMatrix(matrix);
+ * int param_1 = obj->sumRegion(row1,col1,row2,col2);
+ */
+```
+
+leetcode 307 Range Sum Query - Mutable
+
+题目描述：给定一个数组，可以不断更新数组的值，并查询某个区间内的和。
+
+思路：
+1. 直接暴力求解。
+
+```cpp
+class NumArray {
+public:
+    vector<int> a;
+    NumArray(const vector<int>& nums) {
+        a = nums;
+    }
+    
+    void update(int i, int val) {
+        a[i] = val;
+    }
+    
+    int sumRange(int i, int j) {
+        int sum = 0;
+        for(int k=i;k<=j;++k) {
+            sum+=a[k];
+        }
+        return sum;
+    }
+};
+
+/**
+ * Your NumArray object will be instantiated and called as such:
+ * NumArray* obj = new NumArray(nums);
+ * obj->update(i,val);
+ * int param_2 = obj->sumRange(i,j);
+ */
+```
+
+2. 使用线段树。
+线段树分为三个操作：build, query, update.
+给定数组[1,2,3,4,5,6]，为了计算方便，使用数组表示树。同时为了方便计算，树的node从1开始，2x代表左子树，2x+1代表右子树。根节点代表范围[1,n]的查询。左子为[1,mid]的查询，右子为[mid+1, n]的查询。
+
+**build操作**
+```cpp
+void build(int l, r, x) {
+    /**
+    l代表查询区间的左边界，r代表查询区间的右边界。
+    x代表当前node的下标，当前node的左子树是2x，右子树是2x+1。
+    */
+    // 左右相当的node，就是叶子节点。到了叶子结点直接更新值。
+    if(l == r) {
+        sum[x] = nums[l];
+        return ;
+    }
+    // 不是叶子节点就递归构建
+    int mid = l + (r - l) / 2;
+    build(l, mid, 2*x);
+    build(mid+1, r, 2*x+1);
+    //构建之后更新中间节点的值
+    sum[x] = sum[2*x] + sum[2*x+1];
+}
+```
+
+**query操作**
+```cpp
+int query(int l, int r, int A, int B, int x) {
+    /**
+    l代表当前的左边界，r代表当前的右边界。
+    A代表查询的左边界，B代表查询的右边界。
+    */
+    // 如果{[]}当前边界被查询的边界包含，那么直接返回sum[x]
+    if(A <= l && r <= B) return sum[x];
+    // 如果[{]}当前边界的右边和查询区间重合，那么继续向右边查询。
+    int mid = l + (r - l) / 2;
+    int left=0, right=0;
+    if(mid+1 <= B) right = query(mid+1, r, A, B, 2*x+1);
+    // 如果{[}]当前边界的左边和查询区间重合，那么向左查找。
+    if(mid >= A) left = query(l, mid, A, B, 2*x);
+    return left+right;
+}
+```
+
+**update操作**
+```cpp
+void update(int l, int r, int pos, int val, int x) {
+    /**
+    l代表查询的左边界，r代表查询的右边界。
+    pos代表要更新的位置，val代表要更新的值。
+    */
+    // 如果是叶子节点，证明到了pos，直接更新
+    if(l == r) {
+        sum[x] = val;
+        return ;
+    }
+    // 如果是中间节点，递归更新
+    int mid = l + (r - l) / 2;
+    if(pos <= mid) update(l, mid, pos, val, 2*x);
+    else update(mid+1, r, pos, val, 2*x+1);
+    sum[x] = sum[2*x] + sum[2*x+1];
+}
+```
+
+```cpp
+class NumArray {
+public:
+    vector<int> a;
+    int size;
+    NumArray(const vector<int>& nums) {
+        size = nums.size();
+        if(nums.size() == 0) return;
+        a.resize(nums.size()*4, 0);
+        build(1, nums.size(), 1, nums);
+        // cout << "build finish" << endl;
+    }
+    
+    int build(int l, int r, int x, const vector<int> &nums) {
+        // cout << "build " << l << " " << r << " " << x << endl;
+        if(l == r) {
+            a[x] = nums[l-1];
+            return a[x];
+        }
+        int mid = l + (r - l) / 2;
+        int s1 = build(l, mid, 2*x, nums);
+        int s2 = build(mid+1, r, 2*x+1, nums);
+        a[x] = s1 + s2;
+        return a[x];
+    }
+    
+    int query(int l, int r, int A, int B, int x) {
+        if(A <= l && r <= B) {
+            return a[x];
+        }
+        int mid = l + (r - l) / 2;
+        int s1 = 0, s2 = 0;
+        if(A <= mid) s1 = query(l, mid, A, B, 2*x);
+        if(B >= mid+1) s2 = query(mid+1, r, A, B, 2*x+1);
+        return s1 + s2;
+    }
+    
+    void update(int l, int r, int pos, int x, int val) {
+        // cout << "update " << l << " " << r << " " << " " << pos << " " << x << endl;
+        if(l == r) {
+            // cout << "in update x=" << x << " val=" << val << endl;
+            a[x] = val;
+            return ;
+        }
+        int mid = l + (r - l) / 2;
+        if(pos <= mid) update(l, mid, pos, 2*x, val);
+        else update(mid+1, r, pos, 2*x+1, val);
+        a[x] = a[x*2] + a[x*2+1];
+        // cout << l << " " << r << " x=" << x << " a[x]=" << a[x] << endl;
+    }
+    
+    void update(int i, int val) {
+        update(1, size, i+1, 1, val);
+    }
+    
+    int sumRange(int i, int j) {
+        // cout << "query " << i << " " << j << endl;
+        return query(1, size, i+1, j+1, 1);
+    }
+};
+
+/**
+ * Your NumArray object will be instantiated and called as such:
+ * NumArray* obj = new NumArray(nums);
+ * obj->update(i,val);
+ * int param_2 = obj->sumRange(i,j);
+ */
+```
+
+leetcode 333 Largest BST Subtree
+
+题目描述：给定一个二叉树，找出其中最大的BST。
+
+思路：
+
+1. 对于每一个点，验证其是否是BST，是的话，记录点的数量。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    int largestBSTSubtree(TreeNode* root) {
+        int res = 0;
+        if(!root) return res;
+        queue<TreeNode*> q;
+        q.push(root);
+        while(!q.empty()) {
+            int size = q.size();
+            for(int i=0;i<size;++i) {
+                TreeNode *t = q.front();
+                q.pop();
+                if(t->left) q.push(t->left);
+                if(t->right) q.push(t->right);
+                int tmp = 0;
+                if(isValidBST(t, INT_MIN, INT_MAX, tmp)) {
+                    res = max(res, tmp);
+                }
+            }
+        }
+        return res;
+    }
+    
+    bool isValidBST(TreeNode* root, int low, int high, int &tmp) {
+        if(!root) return true;
+        tmp++;
+        if(root->val <= low || root->val >= high) return false;
+        return isValidBST(root->left, low, root->val, tmp) && isValidBST(root->right, root->val, high, tmp);
     }
 };
 ```
@@ -3724,6 +5372,69 @@ public:
             }
         }
         return max_len;
+    }
+};
+```
+
+leetcode 907 Sum of Subarray Minimums
+
+题目描述：给的一个数组，求出数组所有子数组中最小值的和。
+
+思路：这道题看了很久才看明白，又看了很久答案才明白怎么做。首先介绍给定一个元素，如何找到它的前一个小于它的数字和后一个小于它的数字。
+```cpp
+// 前一个小于A[i]的数字
+stack<int> s, ns;
+for(int i=0;i<A.size();++i) {
+    while(!s.empty() && A[s.top()] > A[i]) s.pop();
+    prev[i] = !s.empty() ? -1 : s.top();
+    s.push(i);
+}
+
+// 后一个小于A[i]的数字
+for(int i=0;i<A.size();++i) {
+    while(!ns.empty() && A[ns.top()] > A[i]) {
+        next[ns.top()] = i;
+        ns.pop();
+    }
+    ns.push(i);
+}
+```
+
+找到A[i]的前一个小于的位置和后一个位置，例如[0,3,2,_1_,2,3,0]，对于元素1来说，前一个位置是1，后一个位置是6。那么以1为最小的subset的个数是$(index(1)-1) * (6-index(1))$。对于所有的i，求和就得到了结果。
+
+```cpp
+class Solution {
+public:
+    int sumSubarrayMins(vector<int>& A) {
+        int res = 0;
+        stack<pair<int, int>> s;
+        vector<int> left(A.size()), right(A.size());
+        // prev
+        for(int i=0;i<A.size();++i) {
+            while(!s.empty() && s.top().first > A[i]) {
+                s.pop();
+            }
+            left[i] = s.empty() ? -1 : s.top().second;
+            s.push({A[i], i});
+        }
+        
+        // next
+        while(!s.empty()) s.pop();
+        for(int i=0;i<A.size();++i) {
+            while(!s.empty() && s.top().first > A[i]) {
+                right[s.top().second] = i;
+                s.pop();
+            }
+            s.push({A[i], i});
+            right[i] = A.size();
+        }
+        int MOD = 1e9 + 7;
+        for(int i=0;i<A.size();++i) {
+            // cout << i << " " << A[i] << " " << left[i] << " " << right[i] << endl;
+            res = (res + (A[i] * ((i-left[i]) * (right[i]-i))) % MOD) % MOD;
+        }
+        return res;
+        
     }
 };
 ```
