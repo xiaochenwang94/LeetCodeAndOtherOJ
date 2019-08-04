@@ -2,4 +2,4 @@
 
 每次Leetcode contest试题讲解如下：
 
-* [Contest 148](https://github.com/xiaochenwang94/LeetCodeAndOtherOJ/contest/contest_148.md)
+* [Contest 148]https://github.com/xiaochenwang94/LeetCodeAndOtherOJ/blob/master/contest/contest_148.md)
