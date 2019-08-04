@@ -1,3 +1,4 @@
+# Leetcode Contest 148 题解
 ## [第一题  Decrease Elements To Make Array Zigzag](https://leetcode.com/contest/weekly-contest-148/problems/decrease-elements-to-make-array-zigzag/)
 题目描述：给定一个数组，可以不断对数组中的元素做**减小**操作，每次减小1。
 
