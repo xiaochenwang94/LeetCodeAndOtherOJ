@@ -1,5 +1,98 @@
 # LeetCodeAndOtherOJ
 
+## 二进制字符串问题
+
+```cpp
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        int s = accumulate(nums.begin(), nums.end(), 0);
+        int n=nums.size();
+        int t = (n+0)*(n+1)/2;
+        return t-s;
+    }
+};
+```
+
+leetcode 1016 Binary String With Substrings Representing 1 To N
+
+题目描述：给定一个字符串，和N。求1-N内的数字转化成二进制能否在字符串中找到。
+
+思路：使用bitset，将数字转换为二进制字符串，进而使用find寻找
+
+```cpp
+class Solution {
+public:
+    bool queryString(string S, int N) {
+        while(N) {
+            bitset<32> b(N--);
+            string x = b.to_string();
+            if(S.find(x.substr(x.find('1'))) == string::npos) return false;
+        }
+        return true;
+    }
+};
+```
+
+## 最长递增子序串/序列
+### 最长递增字串
+leetcode 674 Longest Continuous Increasing Subsequence
+
+题目描述：给定一个数组，求最长递增子序列的长度。
+
+思路：扫一遍数组，不断更新最长的长度。
+
+```cpp
+class Solution {
+public:
+    int findLengthOfLCIS(vector<int>& nums) {
+        if(nums.size() == 0) return 0;
+        int res = 0, tmp = 1;
+        for(int i=1;i<nums.size();++i) {
+            if(nums[i] > nums[i-1]) tmp++;
+            else {
+                res = max(res, tmp);
+                tmp = 1;
+            }
+        }
+        res = max(res, tmp);
+        return res;
+    }
+};
+```
+
+leetcode 673 Number of Longest Increasing Subsequence
+
+题目描述：给定一个数组，求出其最长递增子序列的个数。
+
+思路：本题使用dp，定义len数组代表以每个位置结尾的最长递增子序列的长度。定义cnt数组代表以每个位置结尾的最长递增子序列的个数。对于每个数字遍历其之前的所有数字，如果nums[i] <= nums[j]，那么无法构成递增子序列，不进行更新。如果nums[i] > nums[j]，那么判断len[i]是否等于len[j]+1，这代表将nums[i]接到nums[j]后面构成新的递增子序列，同时更新cnt[i]+=cnt[j]。如果len[i] < len[j] + 1，这代表出现了更长的递增子序列，那么需要将cnt[i] = cnt[j]，len[i] = len[j] + 1。每次更新完len[i]，检查最长的长度有没有变化，如果没有变化，那么res+=cnt[i]，反之res = cnt[i]。
+
+```cpp
+class Solution {
+public:
+    int findNumberOfLIS(vector<int>& nums) {
+        int res = 0, mx = 0;
+        vector<int> len(nums.size(), 1), cnt(nums.size(), 1);
+        for(int i=0;i<nums.size();++i) {
+            for(int j=0;j<i;++j) {
+                if(nums[i] <= nums[j]) continue;
+                if(len[i] == len[j] + 1) cnt[i] += cnt[j];
+                else if(len[i] < len[j] + 1){
+                    cnt[i] = cnt[j];
+                    len[i] = len[j] + 1;
+                }
+            }
+            if(mx == len[i]) res += cnt[i];
+            else if(mx < len[i]){
+                mx = len[i];
+                res = cnt[i];
+            }
+        }
+        return res;
+    }
+};
+```
+
 ## 不重复数字，重复数字问题
 
 leetcode 357 Count Numbers with Unique Digits
@@ -1030,6 +1123,75 @@ public:
     }
 };
 ```
+
+leetcode 1095 Find in Mountain Array
+
+题目描述：
+在一个mountain的数组中，查找一个target，第一次出现的位置。
+思路：
+这道题目使用交互式访问，限制了查询次数。其实就是限制了时间复杂度。要求O(logn)。
+先找到peak，然后分别使用lower_bound查询左边，看查到的值是否相同。不同的话，查找右边，使用修改的lower_bound.
+
+
+```cpp
+/**
+ * // This is the MountainArray's API interface.
+ * // You should not implement it, or speculate about its implementation
+ * class MountainArray {
+ *   public:
+ *     int get(int index);
+ *     int length();
+ * };
+ */
+class Solution {
+public:
+    int findInMountainArray(int target, MountainArray &mountainArr) {
+        int low=0, high=mountainArr.length();
+        while(low < high) {
+            int mid = low + (high - low) / 2;
+            int a = mountainArr.get(mid-1);
+            int b = mountainArr.get(mid);
+            int c = mountainArr.get(mid+1);
+            if(a < b && b < c) {
+                low = mid;
+            } else if(a < b && b > c) {
+                low = high = mid;
+                break;
+            } else if(a > b && b > c) {
+                high = mid;
+            }
+        }
+        int peak = low;
+        low = 0;
+        high = peak;
+        while(low < high) {
+            int mid = low + (high - low) / 2;
+            int value = mountainArr.get(mid);
+            if(value < target) {
+                low = mid+1;
+            } else {
+                high = mid;
+            }
+        }
+        if(mountainArr.get(low) == target) return low;
+        low = peak;
+        high = mountainArr.length()-1;
+        while(low < high) {
+            int mid = low + (high - low) / 2;
+            int value = mountainArr.get(mid);
+            if(value > target) {
+                low = mid+1;
+            } else {
+                high = mid;
+            }
+        }
+        if(mountainArr.get(low) == target) return low;
+        return -1;
+    }
+};
+
+```
+
 
 
 ### upper_bound
@@ -4873,6 +5035,59 @@ public:
 };
 ```
 
+leetcode 290 Word Pattern
+
+题目描述：给定一个pattern和一个str，str中由若干的单词组成，使用空格分开。以单词为单元，查看str是否满足pattern
+
+思路：使用map记录pattern和单词的对应关系。
+
+```cpp
+class Solution {
+public:
+    bool wordPattern(string pattern, string str) {
+        map<char, string> m;
+        map<string, char> rm;
+        int pos = 0, i=0;
+        while(pos < str.size()) {
+            while(str[pos] == ' ') pos++;
+            int len = 0;
+            while(pos+len < str.size() && str[pos+len] != ' ') len++;
+            string sub = str.substr(pos, len);
+            // cout << pos << " " << len << " " << sub << endl;
+            if(i >= pattern.size()) return false;
+            if(m.find(pattern[i]) != m.end() && m[pattern[i]] != sub) return false;
+            m[pattern[i]] = sub;
+            if(rm.find(sub) != rm.end() && rm[sub] != pattern[i]) return false;
+            rm[sub] = pattern[i];
+            ++i;
+            pos = pos+len+1;
+        }
+        if(i < pattern.size()) return false;
+        
+        return true;
+    }
+};
+```
+
+记录一种nb写法
+
+```cpp
+class Solution {
+public:
+    bool wordPattern(string pattern, string str) {
+        unordered_map<char, int> m1;
+        unordered_map<string, int> m2;
+        istringstream in(str);
+        int i = 0, n = pattern.size();
+        for (string word; in >> word; ++i) {
+            if (i == n || m1[pattern[i]] != m2[word]) return false;
+            m1[pattern[i]] = m2[word] = i + 1;
+        }
+        return i == n;
+    }
+};
+```
+
 leetcode 297 Serialize and Deserialize Binary Tree
 
 题目描述：给定一棵树，实现序列化和反序列化。
@@ -5439,6 +5654,347 @@ public:
 };
 ```
 
+leetcode 930 Binary Subarrays With Sum
+
+题目描述：给定一个只包含0/1的数组，和一个值。求和为这个值的子数组的数量。
+
+思路：首先求出所有1的位置。res+=left*right，其中left和right是距离上一个1和下一个1的距离。这里有一个小技巧，在开头和最后分别添加-1和size，这样就可以统一处理了。
+
+```cpp
+class Solution {
+public:
+    int numSubarraysWithSum(vector<int>& A, int S) {
+        vector<int> one_idx;
+        one_idx.push_back(-1);
+        for(int i=0;i<A.size();++i) {
+            if(A[i] == 1) one_idx.push_back(i);
+        }
+        one_idx.push_back(A.size());
+        int res = 0;
+        if(S == 0) {
+            for(int i=1;i<one_idx.size();++i) {
+                int w = one_idx[i] - one_idx[i-1] -1;
+                res += w * (w+1) / 2;
+            }
+            return res;
+        }
+        for(int i=1;i<one_idx.size()-1;++i) {
+            int next = i + S;
+            if(next >= one_idx.size()) break;
+            int left, right;
+            left = one_idx[i] - one_idx[i-1];
+            right = one_idx[next] - one_idx[next-1];
+            res += left * right;
+        }
+        return res;
+    }
+};
+```
+
+leetcode 942
+
+题目描述：给定一个只包含I和D的字符串，字符串长度为N。另有一个数组A，包含[0, ..., N]，I代表A[i] < A[i+1]，D代表A[i] > A[i+1]。求一个可能的排列。
+
+思路：开始没有什么思路，参考答案，每次遇到I就把当前最小的值放上去，每次遇到D就把当前最大的值放上去。
+
+```cpp
+class Solution {
+public:
+    vector<int> diStringMatch(string S) {
+        vector<int> res(S.size()+1);
+        int mi=0, mx=S.size();
+        for(int i=0;i<S.size();++i) {
+            if(S[i] == 'I') {
+                res[i] = mi;
+                mi++;
+            } else {
+                res[i] = mx;
+                mx--;
+            }
+        }
+        res[S.size()] = mi;
+        return res;
+    }
+};
+```
+
+leetcode 945 Minimum Increment to Make Array Unique
+
+题目描述：给定一个数组，可以为某一个元素做++操作。求把数组中所有元素变成unique，需要多少次++操作。
+
+思路：参考大神思路。将数组排序，使用need表示当前应该到达的数字，是之前一个数字+1，如果当前x比need大，那么不需要++操作，否则需要need-x步++操作。
+
+```cpp
+class Solution {
+public:
+    int minIncrementForUnique(vector<int>& A) {
+        sort(A.begin(), A.end());
+        int res = 0, need = 0;
+        for(auto x : A) {
+            res += max(need-x, 0);
+            need = max(need, x) + 1;
+        }
+        return res;
+    }
+};
+```
+
+leetcode 979 Distribute Coins in Binary Tree
+
+题目描述：给定一棵二叉树，所有node上值的和为N，树的node数量也为N。每个node可以花费一步，把自己的一个金币给父亲或者儿子，求最少的步骤使得所有的node上都有一个金币。
+
+思路：毫无思路，参考答案。遍历每个node，返回当前子树的value，如果当前子树能够自给自足，那么就不需要外部移动。否则结果要加上缺失的或者是多的值。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    int distributeCoins(TreeNode* root) {
+        int res = 0;
+        dfs(root, res);
+        return res;
+    }
+    
+    int dfs(TreeNode *root, int &res) {
+        if(!root) return 0;
+        int left = dfs(root->left, res), right = dfs(root->right, res);
+        res += abs(left) + abs(right);
+        return left + right + root->val - 1;
+    }
+};
+```
+
+leetcode 984 String Without AAA or BBB
+
+题目描述：给定字符串中A和B的数量，组成一个字符串，不包括aaa，bbb这样的字串。
+
+思路：开始使用if else写了一大堆，记录一种简单的写法。如果B>A，交换A和B，这样后面写法统一。如果A比B多，那么就多加一个A，否则一个A一个B。
+
+```cpp
+class Solution {
+public:
+    string strWithout3a3b(int A, int B, char a='a', char b='b', string res="") {
+        if(B > A) return strWithout3a3b(B, A, b, a, res);
+        while(A) {
+            if(A) {res += a; A--;}
+            if(A > B) {res += a; A--;}
+            if(B) {res += b; B--;}
+        }
+        return res;
+    }
+};
+```
+
+leetcode 990 Satisfiability of Equality Equations
+
+题目描述：给定系列一个字符串，包含等式和不等式，求是否成立。
+
+思路：使用并查集，主要记录简洁的写法。
+
+```cpp
+class Solution {
+public:
+    static bool cmp(const string &x, const string &y) {
+        return x[1] > y[1];
+    }
+    
+    bool equationsPossible(vector<string>& equations) {
+        sort(equations.begin(), equations.end(), cmp);
+        // for(auto x:equations) cout << x << endl;
+        
+        vector<int> v(26, -1);
+        for(auto e : equations) {
+            char x = e[0], y = e[3];
+            if(e[1] == '=') {
+                if(v[x-'a'] != -1 && v[y-'a'] != -1) {
+                    int value = v[y-'a'];
+                    for(auto &vv : v) {
+                        if(vv == value) vv = v[x-'a'];
+                    }
+                } else if(v[x-'a'] == -1 && v[y-'a'] == -1) {
+                    v[x-'a'] = x-'a';
+                    v[y-'a'] = x-'a';
+                } else if(v[x-'a'] == -1) {
+                    v[x-'a'] = v[y-'a'];
+                } else {
+                    v[y-'a'] = v[x-'a'];
+                }
+            } else {
+                if(x == y) return false;
+                if(v[x-'a'] != -1 && v[y-'a'] != -1) {
+                    if(v[x-'a'] == v[y-'a']) return false;
+                } else if(v[x-'a'] == -1 && v[y-'a'] == -1) {
+                    v[x-'a'] = x-'a';
+                    v[y-'a'] = y-'a';
+                } else if(v[x-'a'] == -1) {
+                    v[x-'a'] = x-'a';
+                } else {
+                    v[y-'a'] = y-'a';
+                }
+            }
+        }
+        return true;
+    }
+};
+```
+
+```cpp
+int uf[26];
+bool equationsPossible(vector<string>& equations) {
+    for (int i = 0; i < 26; ++i) uf[i] = i;
+    for (string e : equations)
+        if (e[1] == '=')
+            uf[find(e[0] - 'a')] = find(e[3] - 'a');
+    for (string e : equations)
+        if (e[1] == '!' && find(e[0] - 'a') == find(e[3] - 'a'))
+            return false;
+    return true;
+}
+
+int find(int x) {
+    if (x != uf[x]) uf[x] = find(uf[x]);
+    return uf[x];
+}
+```
+
+leetcode 991 Broken Calculator
+
+题目描述：给定一个计算器，只能用乘2和减1，给定两个值X， Y。求从X到Y的最小步数。
+
+思路：倒着求，求从Y到X，操作为加1和除2。如果Y是odd，只加1，否则除2，直到X=Y。
+
+```cpp
+class Solution {
+public:
+    int brokenCalc(int X, int Y) {
+        int res = 0;
+        while(Y > X) {
+            res++;
+            if(Y % 2 == 1) Y++;
+            else Y/=2;
+        }
+        return res + X - Y;
+    }
+};
+```
+
+leetcode 993 Cousins in Binary Tree
+
+题目描述：判断两个树中的两个node是不是兄弟，兄弟的定义是位于同一层，但是不同父亲的node。
+
+思路：找到两个node，并记录depth和父亲。
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool isCousins(TreeNode* root, int x, int y) {
+        TreeNode *xt=NULL, *yt=NULL;
+        int xd=0, yd=0;
+        dfs(root, x, xt, xd, 0);
+        dfs(root, y, yt, yd, 0);
+        if(xd == yd && xt != yt) return true;
+        return false;
+    }
+    
+    void dfs(TreeNode *root, int x, TreeNode * &xt, int &xd, int curd) {
+        if(!root) return;
+        if((root->left && root->left->val == x) ||(root->right && root->right->val == x)) {
+            xt = root;
+            xd = curd+1;
+            return ;
+        }
+        dfs(root->left, x, xt, xd, curd+1);
+        dfs(root->right, x, xt, xd, curd+1);
+    }
+};
+```
+
+leetcode 1003 Check If Word Is Valid After Substitutions
+
+题目描述：查看字符串是否由abc拼接而成，可以在abc中间插入abc。
+
+思路：
+1. 不断查找并删除abc，时间复杂度$O(n^2)$。
+
+```cpp
+class Solution {
+public:
+    bool isValid(string S) {
+        int cnt = S.size();
+        if(cnt % 3 != 0) return false;
+        while(cnt != 0) {
+            auto t = S.find("abc");
+            if(t == string::npos) return false;
+            S.erase(t, 3);
+            cnt -= 3;
+        }
+        return true;
+    }
+};
+```
+
+2. 使用一个stack，每次遇到c，看前面两个是不是a和b，如果是出栈，继续。
+
+```cpp
+class Solution {
+public:
+    bool isValid(string S) {
+        if(S.size() % 3 != 0) return false;
+        vector<char> st;
+        for(int i=0;i<S.size();++i) {
+            if(S[i] == 'c') {
+                int n = st.size();
+                if(n < 2 || st[n-1] != 'b' || st[n-2] != 'a') return false;
+                st.pop_back();
+                st.pop_back();
+            } else {
+                st.push_back(S[i]);
+            }
+        }
+        return st.size() == 0;
+    }
+};
+```
+
+leetcode 1014 Best Sightseeing Pair
+
+题目描述：给定一个数组，求出最大的(i<j) A[i] + A[j] + i - j的值。
+2 <= A.length <= 50000
+1 <= A[i] <= 1000
+
+思路：根据题目数据限制可知，只能使用O(n)的方法。扫描一遍数组，使用cur记录当前的最大值，每走一步最大值减少1。和现在的值加起来更新最大值。
+
+```cpp
+class Solution {
+public:
+    int maxScoreSightseeingPair(vector<int>& A) {
+        int res = 0, cur = 0;
+        for(auto x : A) {
+            res = max(res, cur + x);
+            cur = max(cur, x) - 1;
+        }
+        return res;
+    }
+};
+```
+
 
 ## Leetcode Contest
 contest 116 大神代码
@@ -5736,5 +6292,206 @@ public:
         return answers;
     }
 
+};
+```
+
+contest 252
+
+***leetcode 1952 Three Divisors***
+
+題目描述：给定一个整数n，如果n正好能被三个正整数整除，返回true，否则返回false。
+
+思路：任何整数都能被1和自己整除，从2遍历到sqrt(n)，如果能够整除n的数字比1个多，那么就返回false。
+
+```cpp
+class Solution {
+public:
+    bool isThree(int n) {
+        int x = floor(sqrt(n));
+        int cnt = 0;
+        for(int i=2;i<=x;++i) {
+            if(n % i == 0) {
+                cnt++;
+                if (n / i != i) cnt++;
+            }
+            if(cnt > 1) return false;
+        }
+        return cnt == 1;
+    }
+};
+```
+
+***leetcode 1953 Maximum Number of Weeks for Which You Can Work***
+
+题目描述：有n个项目，编号从0到n-1。milestones数组中存储了每个项目需要多少周完工。做工需要符合下面两个规则：
+* 每周只能做一个项目，每周必须工作。
+* 同一个项目不能连续做两周。
+
+当所有项目都完成，或者只剩下了一个项目做了就会违反规定的时候，就停止工作。注意，在规定的限制下，有可能不能完成所有工作。求出在不违反规定的情况下最多能工作多少周。
+
+```
+Example 1:
+
+Input: milestones = [1,2,3]
+Output: 6
+Explanation: One possible scenario is:
+​​​​- During the 1st week, you will work on a milestone of project 0.
+- During the 2nd week, you will work on a milestone of project 2.
+- During the 3rd week, you will work on a milestone of project 1.
+- During the 4th week, you will work on a milestone of project 2.
+- During the 5th week, you will work on a milestone of project 1.
+- During the 6th week, you will work on a milestone of project 2.
+The total number of weeks is 6.
+Example 2:
+
+Input: milestones = [5,2,1]
+Output: 7
+Explanation: One possible scenario is:
+- During the 1st week, you will work on a milestone of project 0.
+- During the 2nd week, you will work on a milestone of project 1.
+- During the 3rd week, you will work on a milestone of project 0.
+- During the 4th week, you will work on a milestone of project 1.
+- During the 5th week, you will work on a milestone of project 0.
+- During the 6th week, you will work on a milestone of project 2.
+- During the 7th week, you will work on a milestone of project 0.
+The total number of weeks is 7.
+Note that you cannot work on the last milestone of project 0 on 8th week because it would violate the rules.
+Thus, one milestone in project 0 will remain unfinished.
+ 
+
+Constraints:
+
+n == milestones.length
+1 <= n <= 105
+1 <= milestones[i] <= 109
+```
+
+思路：如果所有的项目都可以做完，那么可以工作的周数为milestones每一项的和。能否做完所有项目，取决于最大项目需要的周数。如果最大的项目需要的周数比其他所有项目的和还多1周，那么就无法完成所有项目。能够做到的就是其他所有项目的和*2+1周。
+
+```cpp
+class Solution {
+public:
+    long long numberOfWeeks(vector<int>& milestones) {
+        long long int sum = 0;
+        long long int max_num = 0;
+        for (auto x : milestones) {
+            sum += x;
+            max_num = max_num > x ? max_num : x;
+        }
+        if (max_num > (sum/2)) {
+            return (sum-max_num)*2+1;
+        }
+        return sum;
+    }
+};
+```
+
+***leetcode 1954 Minimum Garden Perimeter to Collect Enough Apples***
+
+题目描述：在一个2D的网格中，每个坐标点都有一颗苹果树。在（i，j）位置的苹果树，可以采集到|i|+|j|个苹果。你会从（0，0）为中心的位置，选择一个方形区域进行苹果的采集。给定一个整数neededApples表示需要采集的苹果数量，返回需要采集的区域的四个角的苹果数量和。
+
+
+Example 1:
+![](https://assets.leetcode.com/uploads/2019/08/30/1527_example_1_2.png)
+
+```
+Input: neededApples = 1
+Output: 8
+Explanation: A square plot of side length 1 does not contain any apples.
+However, a square plot of side length 2 has 12 apples inside (as depicted in the image above).
+The perimeter is 2 * 4 = 8.
+Example 2:
+
+Input: neededApples = 13
+Output: 16
+Example 3:
+
+Input: neededApples = 1000000000
+Output: 5040
+```
+
+思路：设x为正方形区域的半径。根据（0，0）将坐标轴上的点分成4部分。坐标轴上的苹果数量为：
+$$sum_{axis}(x) = 4 * (1+x) * x / 2 = 2x^2+2x$$
+根据坐标轴，将其他区域也分为4个部分（不含坐标轴），以右上角（第一象限）为例。
+
+当x=1的时候，第一象限的苹果数量为：
+$$sum_{part}(x=1) = 1+1=2$$
+当x=2的时候，第一象限的苹果数量为：
+$$sum_{part}(x=2) = sum_{part}(x=1) + ((x+1)+(x+x))*x/2*2-(x+x)$$
+$$sum_{part}(x=2) = ssum_{part}(x=1) + 3x^2-x$$
+如下图所示，绿框为$sum_{part}(x=1)$，那么$sum_{part}(x=2)$为$sum_{part}(x=1)$加上两个红框的值，再减去加重复的边角值。一个红框的值就是一个等差数列求和。：
+![](pic/leetcode1954.png)
+
+因此x和苹果总数的关系为：
+$$sum_{total}(x) = sum_{axis}(x) + 4*sum_{part}(x)$$
+因此，求出大于neededApples的x的最小值，返回x*8即可。
+
+```cpp
+class Solution {
+public:
+    long long minimumPerimeter(long long neededApples) {
+        long long int total = 0;
+        long long int part = 0;
+        for(long long int i=1;i<=neededApples;++i) {
+            total = 14 * i * i - 2*i +part;
+            part = 12*i*i-4*i + part;
+            if (total >= neededApples) return i*8;
+        }
+        return 0;
+    }
+};
+```
+
+***leetcode 1955 Count Number of Special Subsequences***
+
+题目描述：nums数组仅由0，1，2组成。如果一个子序列是正整数个0，跟着正整数个1，再跟着正整数个2组成。那么这个子序列就是特殊的。例如：[0,1,2]和[0,0,1,1,1,2]就是特殊的。[2,1,0],[1],[0,1,2,0]就不是特殊的。给定一个数组nums，求出所有特殊的子序列个数，如果数字太大，返回模10^9 + 7的值。
+
+```
+Example 1:
+
+Input: nums = [0,1,2,2]
+Output: 3
+Explanation: The special subsequences are [0,1,2,2], [0,1,2,2], and [0,1,2,2].
+Example 2:
+
+Input: nums = [2,2,0,0]
+Output: 0
+Explanation: There are no special subsequences in [2,2,0,0].
+Example 3:
+
+Input: nums = [0,1,2,0,1,2]
+Output: 7
+Explanation: The special subsequences are:
+- [0,1,2,0,1,2]
+- [0,1,2,0,1,2]
+- [0,1,2,0,1,2]
+- [0,1,2,0,1,2]
+- [0,1,2,0,1,2]
+- [0,1,2,0,1,2]
+- [0,1,2,0,1,2]
+ 
+
+Constraints:
+
+1 <= nums.length <= 105
+0 <= nums[i] <= 2
+```
+
+思路：dp[0]表示正整数个0为特殊子序列的个数，dp[1]表示正整数个0，跟着正整数个1为特殊子序列的个数。dp[2]表示正整数个0，跟着正整数个1，再跟着正整数个2为特殊子序列的个数。分下列三种情况讨论：
+* 当nums[i] = 0，那么dp[0] = dp[0] + 1
+* 当nums[i] = 1，那么dp[1] = dp[1] + dp[0]
+* 当nums[i] = 2，那么dp[2] = dp[2] + dp[1]
+
+```cpp
+class Solution {
+public:
+    int countSpecialSubsequences(vector<int>& nums) {
+        vector<long long int> dp {0, 0, 0};
+        int mod = 1e9 + 7;
+        for(auto x : nums) {
+            dp[x] = ((dp[x] + dp[x]) % mod + (x > 0 ? dp[x-1] : 1)) % mod;
+        }
+        return dp[2];
+    }
 };
 ```
