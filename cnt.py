@@ -1,28 +1,28 @@
-# with open('README.md', 'r') as f:
-#     lines = f.readlines()
-#     cpp_flag = True
-#     python_flag = True
-#     python_cnt = 0
-#     cpp_cnt = 0
-#     start = 0
-#     end = 0
-#     for idx, line in enumerate(lines):
-#         line = line.strip()
-#         if "```python" in line:
-#             start = idx
-#             python_flag = False
-#         if line == "```" and not python_flag:
-#             end = idx
-#             python_flag = True
-#             python_cnt += end -start-1
-#         if "```cpp" in line:
-#             start = idx
-#             cpp_flag = False
-#         if line == "```" and not cpp_flag:
-#             end = idx
-#             cpp_flag = True
-#             cpp_cnt += end-start-1
-#     print("cpp_cnt = {}\npython_cnt = {}".format(cpp_cnt, python_cnt))
+with open('README.md', 'r') as f:
+    lines = f.readlines()
+    cpp_flag = True
+    python_flag = True
+    python_cnt = 0
+    cpp_cnt = 0
+    start = 0
+    end = 0
+    for idx, line in enumerate(lines):
+        line = line.strip()
+        if "```python" in line:
+            start = idx
+            python_flag = False
+        if line == "```" and not python_flag:
+            end = idx
+            python_flag = True
+            python_cnt += end -start-1
+        if "```cpp" in line:
+            start = idx
+            cpp_flag = False
+        if line == "```" and not cpp_flag:
+            end = idx
+            cpp_flag = True
+            cpp_cnt += end-start-1
+    print("cpp_cnt = {}\npython_cnt = {}".format(cpp_cnt, python_cnt))
 
 # n = input()
 # l = n.split(' ')
@@ -49,34 +49,34 @@
 #         print(x, n/x)
 # print(83777*85229)
 
-def isprime(n):
-    if(n == 2 or n == 3):
-        return True
-    if(n%6!=1 and n%6!=5):
-         return False
-    n_sqrt = int(math.sqrt(n))
-    for i in range(5, n_sqrt, 6):
-        if n % i == 0 or n % (i+2) == 0:
-            return False
-    return True
+# def isprime(n):
+#     if(n == 2 or n == 3):
+#         return True
+#     if(n%6!=1 and n%6!=5):
+#          return False
+#     n_sqrt = int(math.sqrt(n))
+#     for i in range(5, n_sqrt, 6):
+#         if n % i == 0 or n % (i+2) == 0:
+#             return False
+#     return True
     
 
-import math
-from tqdm import tqdm
-start = 6541367000
-end = 6541367999
-q = int(math.sqrt(end)) + 2
-q = q * 2
-prim = [x for x in range(q)]
-prims = []
-for i in range(2, q):
-    if prim[i] != 0:
-        prims.append(i)
-    for j in range(i+i, len(prim), i):
-        prim[j] = 0
-print(prims)
-for n in range(start, end+1):
-    for x in prims:
-        m = n // x
-        if n % x == 0 and m in prims:
-            print(n, x, n//x)
+# import math
+# from tqdm import tqdm
+# start = 6541367000
+# end = 6541367999
+# q = int(math.sqrt(end)) + 2
+# q = q * 2
+# prim = [x for x in range(q)]
+# prims = []
+# for i in range(2, q):
+#     if prim[i] != 0:
+#         prims.append(i)
+#     for j in range(i+i, len(prim), i):
+#         prim[j] = 0
+# print(prims)
+# for n in range(start, end+1):
+#     for x in prims:
+#         m = n // x
+#         if n % x == 0 and m in prims:
+#             print(n, x, n//x)
