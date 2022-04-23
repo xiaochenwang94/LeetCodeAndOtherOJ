@@ -487,6 +487,7 @@ public:
 ```
 
 leetcode 583. Delete Operation for Two Strings
+
 题目描述：给定word1和word2两个单词，返回最少的操作次数把word1变成word2。每次操作可以删除word1或者word2中的一个字母。
 
 ```
@@ -6693,6 +6694,41 @@ public:
             }
         }
         return res;
+    }
+};
+```
+
+leetcode 2207. Maximize Number of Subsequences in a String
+
+题目描述：给定一个字符串text和另一个字符串pattern，pattern只有两个字母。可以把pattern[0]或者pattern[1]插入到text的任意一个位置一次，包括开头和结尾。求插入后最多能有多少个pattern子序列。
+
+思路：要想子序列最多，pattern[0]一定要在pattern[1]之前，那么就比较pattern[0]插入在第一个位置和pattern[1]插入在最后一个位置返回pattern序列的数量。
+
+在插入pattern的某个字符到text后，先数一下有多少个体pattern[1]记录为cnt。遍历整个text字符串，如果text[i] == pattern[0]，那么可以后面的cnt个pattern[1]组成pattern。如果text[i] == pattern[1]，那么后面的pattern[1]就少了一个，需要给cnt-1。注意如果pattern[0] == pattern[1]的情况下，遍历每一个字母时cnt都会少1，所以开始需要给cnt-1.
+
+```cpp
+class Solution {
+public:
+    long long pattenNums(string text, string pattern) {
+        int n = text.size();
+        int cnt = 0;
+        for(auto x: text) {
+            if(x == pattern[1]) ++cnt;
+        }
+        if(pattern[0] == pattern[1]) --cnt;
+        long long int result = 0;
+        for(int i=0; i<n; ++i) {
+            if(text[i] == pattern[0]) result += cnt;
+            if(text[i] == pattern[1]) {
+                --cnt;
+            }
+        }
+        return result;
+    }
+    
+    long long maximumSubsequenceCount(string text, string pattern) {
+        long long int x = pattenNums(text+pattern[1], pattern), y = pattenNums(pattern[0]+text, pattern);
+        return x > y ? x : y;
     }
 };
 ```
