@@ -486,6 +486,67 @@ public:
 };
 ```
 
+leetcode 583. Delete Operation for Two Strings
+题目描述：给定word1和word2两个单词，返回最少的操作次数把word1变成word2。每次操作可以删除word1或者word2中的一个字母。
+
+```
+Example 1:
+Input: word1 = "sea", word2 = "eat"
+Output: 2
+Explanation: You need one step to make "sea" to "ea" and another step to make "eat" to "ea".
+
+Example 2:
+Input: word1 = "leetcode", word2 = "etco"
+Output: 4
+```
+
+思路：求出最长公共子序列，把其他字母删除。因为最长公共子序列是两个字符串最长的部分，所以删除的次数一定是最少的。
+
+```cpp
+class Solution {
+public:
+    int minDistance(string word1, string word2) {
+        int m = word1.size(), n = word2.size();
+        vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+        for(int i=1; i<m+1; ++i) {
+            for(int j=1; j<n+1; ++j) {
+                if(word1[i-1] == word2[j-1]) {
+                    dp[i][j] = dp[i-1][j-1] + 1;
+                } else {
+                    dp[i][j] = max(dp[i][j-1], dp[i-1][j]);
+                }
+            }
+        }
+        return m + n - 2*dp[m][n];
+    }
+};
+```
+
+leetcode 1143. Longest Common Subsequence
+
+题目表述：给定两个字符串求最长公共子序列。
+
+```cpp
+class Solution {
+public:
+    int longestCommonSubsequence(string text1, string text2) {
+        int m = text1.size(), n = text2.size();
+        vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+        for(int i=1; i<=m; ++i) {
+            for(int j=1; j<=n; ++j) {
+                if(text1[i-1] == text2[j-1]) {
+                    dp[i][j] = dp[i-1][j-1] + 1;
+                } else {
+                    dp[i][j] = max(dp[i-1][j], dp[i][j-1]);
+                }
+            }
+        }
+        return dp[m][n];
+    }
+};
+```
+
+
 ## 公共祖先问题
 
 ### 链表公共节点
