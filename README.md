@@ -1,5 +1,44 @@
 # LeetCodeAndOtherOJ
 
+## string字符串问题
+leetcode 2224. Minimum Number of Operations to Convert Time
+
+题目描述：给定两个24小时的时间current和correct，格式为HH:MM，其中HH取值范围是00-23，MM取值范围是00-59，每次操作可以把current增加1分钟，5分钟，15分钟，60分钟。求最少多少次可以把current转换为correct。保证correct >= current。
+
+思路：把current和correct转化为分钟，求出diff，用diff除以60，15，5，1，每次除完取模，求出分别用多少次，加和即可。
+
+```cpp
+class Solution {
+public:
+    int stringToInt(string &str) {
+        int hour = stoi(str.substr(0,2));
+        int min = stoi(str.substr(3,2));
+        return hour*60+min;
+    }
+    int convertTime(string current, string correct) {
+        int cur = stringToInt(current);
+        int cor = stringToInt(correct);
+        int diff = cor - cur;
+        int res = 0;
+        cout << diff << endl;
+        if(diff >= 60) {
+            res += diff / 60;
+            diff = diff % 60;
+        } 
+        if (diff >= 15) {
+            res += diff / 15;
+            diff = diff % 15;
+        }
+        if (diff >= 5) {
+            res += diff / 5;
+            diff = diff % 5;
+        }
+        res += diff;
+        return res;
+    }
+};
+```
+
 ## 二进制字符串问题
 
 ```cpp
@@ -421,6 +460,83 @@ def maxSubArray(self, nums):
         max_e = max(e, max_e)
     return max_e
 ```
+
+[leetcode 2222. Number of Ways to Select Buildings](https://leetcode.com/problems/number-of-ways-to-select-buildings/)
+
+题目描述：给定一个字符串，包含'0'和'1'两种字符。从中间挑出3个字符，挑出的三个字符顺序不变，要求连续的两个字符不能相同。一共有多少种符合要求的字符串。
+
+思路一：使用一个数组v记录每个位置后面数字的情况，如果第i个位置是1，那么记录后面有多少个0。如果第i个位置是0，记录后面有多少个1。
+
+用另一个数组res，记录每个位置有多少个解。从后往前走，i表示第一个数字的位置，j表示第二个数字的位置。如果s[i] != s[j]，那么此时可能是010或者101的一种，无所谓哪种解法是一样的。此时解的数量为v[j]。例如：s[i]为1，s[j]为0，v[j]表示第j个位置后面有多少个1，所以s[i]s[j]解的数量为v[j]。如果s[i] == s[j]，那么后续解的数量和res[j]一样，直接加上res[j]即可。最后把每个位置的解相加就是最后的答案。
+
+```cpp
+class Solution {
+public:
+    long long numberOfWays(string s) {
+        vector<long long int> v(s.size(), 0);
+        long long ones=0, zeros=0;
+        for(int i=s.size()-1; i>=0; --i) {
+            if(s[i] == '0') {
+                zeros++;
+                v[i] = ones;
+            } else {
+                ones++;
+                v[i] = zeros;
+            }
+        }
+        vector<long long int> res(s.size(), 0);
+        for(int i=s.size()-3;i>=0;--i) {
+            for(int j=i+1;j<s.size()-1;++j) {
+                if(s[i] != s[j]) {
+                    res[i] += v[j];
+                    if(v[j] == 0) break;
+                } else {
+                    res[i] += res[j];
+                    break;
+                } 
+            }
+        }
+        long long result = 0;
+        for(auto x: res) result += x;
+        return result;
+    }
+};
+```
+
+思路二：统计字符串中有多少个1记录在ones中，多少个0记录在zeros中。依次遍历字符串每个位置，使用bones记录该位置前面有多少个1，bzeros记录前面有多少个0。对于位置i，如果s[i]为1，那么前面的0和后面的0可以组成010，那么解的个数是bzeros*zeros，之后对bones++，ones--；如果s[i]为0，前面的1和后面的1可以组成101，那么解的个数为bones*ones，之后bzeros++，zeros--；
+
+
+```cpp
+class Solution {
+public:
+    long long numberOfWays(string s) {
+        long long ones=0, zeros=0;
+        for(int i=s.size()-1; i>=0; --i) {
+            if(s[i] == '0') {
+                zeros++;
+            } else {
+                ones++;
+            }
+        }
+        long long bones=0, bzeros=0, res=0;
+        for (int i=0;i<s.size();++i) {
+            if(s[i] == '0') {
+                res += bones*ones;
+                bzeros++;
+                zeros--;
+            } else {
+                res += bzeros*zeros;
+                bones++;
+                ones--;
+            }
+        }
+        return res;
+    }
+};
+```
+
+
+
 
 ## 公共字串和公共子序列问题
 
