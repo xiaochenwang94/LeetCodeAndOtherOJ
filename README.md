@@ -461,6 +461,31 @@ def maxSubArray(self, nums):
     return max_e
 ```
 
+[leetcode 2209. Minimum White Tiles After Covering With Carpets](https://leetcode.com/problems/minimum-white-tiles-after-covering-with-carpets/)
+
+题目描述：给定一个字符串floor包含0和1两种字符，现在有numCarpets个盖片，可以把1盖为0，每个盖片长度为carpetLen，求最终1最少能有几个。
+
+思路：典型的动态规划问题。dp[i][k]表示第i个位置使用了k个盖片最少能有多少个1。分为两种情况，1）第k个盖片没有盖住位置i，那么1的个数为dp[i-1][k] + int(floor[i])。2）如果第k个盖片盖住了第i个位置，那么dp[i-carpetLen][k-1]。
+
+```cpp
+class Solution {
+public:
+    int minimumWhiteTiles(string floor, int numCarpets, int carpetLen) {
+        int n = floor.size();
+        vector<vector<int>> dp(n+1, vector<int>(numCarpets+1));
+        for(int i=1;i<=n;++i) {
+            for(int k=0;k<=numCarpets;++k) {
+                int noCover = dp[i-1][k] + floor[i-1] - '0';
+                int cover = k > 0 ? dp[max(0, i-carpetLen)][k-1]: 10000;
+                dp[i][k] = min(noCover, cover);
+            }
+        }
+        return dp[n][numCarpets];
+    }
+};
+```
+
+
 [leetcode 2222. Number of Ways to Select Buildings](https://leetcode.com/problems/number-of-ways-to-select-buildings/)
 
 题目描述：给定一个字符串，包含'0'和'1'两种字符。从中间挑出3个字符，挑出的三个字符顺序不变，要求连续的两个字符不能相同。一共有多少种符合要求的字符串。
